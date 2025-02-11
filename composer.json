@@ -1,0 +1,28 @@
+{
+  "name": "aristechdev/newsmanager",
+  "description": "Package Laravel modulable pour la gestion des actualités.",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "VotreNom",
+      "email": "votre.email@example.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "AristechDev\\NewsManager\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "AristechDev\\NewsManager\\Providers\\NewsManagerServiceProvider"
+      ]
+    }
+  },
+  "require": {
+    "php": ">=7.4",
+    "laravel/framework": "^8.0|^9.0|^10.0"
+  }
+}
