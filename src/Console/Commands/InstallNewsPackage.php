@@ -11,10 +11,10 @@ class InstallNewsPackage extends Command
      *
      * @var string
      */
-    protected $signature = 'news-manager:install';
+    protected $signature = 'breeze:news';
 
     /**
-     * Description de la commande.
+     * La description de la commande.
      *
      * @var string
      */

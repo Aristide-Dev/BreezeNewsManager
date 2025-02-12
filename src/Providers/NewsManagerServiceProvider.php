@@ -49,5 +49,12 @@ class NewsManagerServiceProvider extends ServiceProvider
             __DIR__ . '/../../config/news.php',
             'news'
         );
+
+        // Enregistrer la commande artisan si l'application tourne en console
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \AristechDev\NewsManager\Console\Commands\InstallNewsPackage::class,
+            ]);
+        }
     }
 } 
