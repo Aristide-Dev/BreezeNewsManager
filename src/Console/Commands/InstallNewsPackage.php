@@ -45,7 +45,7 @@ class InstallNewsPackage extends Command
                 $this->error("L'installation de Laravel Breeze a échoué. Veuillez l'installer manuellement : composer require laravel/breeze");
                 return;
             }
-            
+
             $this->info('Laravel Breeze a été installé avec succès.');
         }
 
@@ -69,7 +69,7 @@ class InstallNewsPackage extends Command
         }
 
         // Appel de la commande Breeze pour installer le stack sélectionné
-        $this->call('breeze:install', ['stack' => $stack]);
+        $this->call('php artisan breeze:install', ['stack' => $stack]);
 
         // 2. Choix des modules à installer (après l'installation du stack)
         $availableModules = ['news', 'media', 'documents'];
