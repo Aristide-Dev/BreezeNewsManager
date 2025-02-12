@@ -9,7 +9,8 @@ class InstallNewsPackage extends Command
     /**
      * La signature de la commande.
      *
-     * Vous pouvez passer en option le stack et les modules, sinon la commande demande interactivement.
+     * Vous pouvez passer en option le stack et les modules,
+     * sinon la commande demande interactivement.
      *
      * @var string
      */
@@ -25,58 +26,58 @@ class InstallNewsPackage extends Command
     /**
      * Exécute la commande.
      */
-    public function handle()
+    public function handle(): void
     {
         // Vérifier si Laravel Breeze est installé
         if (!class_exists(\Laravel\Breeze\BreezeServiceProvider::class)) {
-            $this->error('Laravel Breeze n\'est pas installé. Veuillez l\'installer via Composer :');
-            $this->line('    composer require laravel/breeze');
+            $this->error("Laravel Breeze n'est pas installé. Veuillez l'installer via Composer :\n    composer require laravel/breeze");
+            $this->call('composer require laravel/breeze');
             return;
         }
-        
-        $this->info('Début de l\'installation du package NewsManager.');
 
-        // 1. Choix de la stack pour Breeze
+        $this->info("Début de l'installation du package NewsManager.");
+
+        // 1. Détermination de la stack à utiliser
         $stack = $this->option('stack');
         if (!$stack) {
-            $stack = $this->choice(
-                'Quelle stack frontale souhaitez-vous installer pour Laravel Breeze ?',
-                ['blade', 'react', 'vue'],
-                0
-            );
-        }
-        $this->info("Stack sélectionnée : " . $stack);
-
-        // Appel de la commande de Breeze pour installer le stack sélectionné
-        // (la commande breeze:install doit être bien configurée dans votre application)
-        $this->call('breeze:install', ['stack' => $stack]);
-
-        // 2. Choix des modules à installer
-        $availableModules = ['news', 'media', 'documents'];
-        $modulesInput = $this->option('modules');
-
-        if ($modulesInput) {
-            // Si l'utilisateur passe une option, on gère le "all" ou une liste séparée par des virgules
-            if (strtolower($modulesInput) === 'all') {
-                $modules = $availableModules;
+            $stack = $this->autoDetectStack();
+            if ($stack) {
+                $this->info("Stack auto-détectée : $stack");
             } else {
-                $inputModules = array_map('trim', explode(',', $modulesInput));
-                $modules = array_intersect($inputModules, $availableModules);
+                // Si l'auto-détection échoue, proposer un choix interactif
+                $stack = $this->choice(
+                    'Quelle stack frontale souhaitez-vous installer pour Laravel Breeze ?',
+                    ['blade', 'react', 'vue'],
+                    0
+                );
             }
         } else {
-            // Sinon, proposer un choix interactif
+            $this->info("Stack spécifiée par option : $stack");
+        }
+
+        // Appel de la commande de Breeze pour installer le stack sélectionné
+        $this->call('breeze:install', ['stack' => $stack]);
+
+        // 2. Choix des modules à installer (après l'installation du stack)
+        $availableModules = ['news', 'media', 'documents'];
+        $modulesOption  = $this->option('modules');
+
+        if ($modulesOption) {
+            $modules = (strtolower($modulesOption) === 'all')
+                ? $availableModules
+                : array_intersect(
+                    array_map('trim', explode(',', $modulesOption)),
+                    $availableModules
+                );
+        } else {
             if ($this->confirm('Voulez-vous installer tous les modules (actualités, médias, documents) ?', true)) {
                 $modules = $availableModules;
             } else {
                 $modules = [];
-                if ($this->confirm('Installer le module Actualités ?', false)) {
-                    $modules[] = 'news';
-                }
-                if ($this->confirm('Installer le module Médias ?', false)) {
-                    $modules[] = 'media';
-                }
-                if ($this->confirm('Installer le module Documents ?', false)) {
-                    $modules[] = 'documents';
+                foreach ($availableModules as $module) {
+                    if ($this->confirm('Installer le module ' . ucfirst($module) . ' ?', false)) {
+                        $modules[] = $module;
+                    }
                 }
             }
         }
@@ -85,31 +86,18 @@ class InstallNewsPackage extends Command
             $this->warn('Aucun module sélectionné. Le package sera installé sans modules additionnels.');
         } else {
             $this->info('Modules sélectionnés : ' . implode(', ', $modules));
-            // Publication de la configuration et des migrations spécifiques.
-            // Vous pouvez définir des tags spécifiques pour chaque module dans votre Service Provider
+            // Association de chaque module aux tags de publication correspondants
+            $moduleTags = [
+                'news'      => ['newsmanager-config', 'newsmanager-migrations'],
+                'media'     => ['newsmanager-media-config'],
+                'documents' => ['newsmanager-documents-config'],
+            ];
+
             foreach ($modules as $module) {
-                switch ($module) {
-                    case 'news':
-                        $this->call('vendor:publish', [
-                            '--tag' => 'newsmanager-config',
-                        ]);
-                        $this->call('vendor:publish', [
-                            '--tag' => 'newsmanager-migrations',
-                        ]);
-                        break;
-                    case 'media':
-                        // Si vous avez des assets ou configurations spécifiques pour les médias,
-                        // vous pouvez définir un tag "newsmanager-media-config"
-                        $this->call('vendor:publish', [
-                            '--tag' => 'newsmanager-media-config',
-                        ]);
-                        break;
-                    case 'documents':
-                        // Pareil pour le module documents
-                        $this->call('vendor:publish', [
-                            '--tag' => 'newsmanager-documents-config',
-                        ]);
-                        break;
+                if (isset($moduleTags[$module])) {
+                    foreach ($moduleTags[$module] as $tag) {
+                        $this->call('vendor:publish', ['--tag' => $tag]);
+                    }
                 }
             }
         }
@@ -117,4 +105,22 @@ class InstallNewsPackage extends Command
         $this->info('Installation du package NewsManager terminée.');
         $this->info('Pensez à lancer "php artisan migrate" pour exécuter les migrations.');
     }
-} 
+
+    /**
+     * Tente d'auto-détecter la stack à utiliser.
+     *
+     * @return string|null
+     */
+    private function autoDetectStack(): ?string
+    {
+        // Heuristique simple : détecte Blade, Vue ou React en fonction de l'existence de certains fichiers.
+        if (file_exists(resource_path('views/auth/login.blade.php'))) {
+            return 'blade';
+        } elseif (file_exists(resource_path('js/Pages/Login.vue'))) {
+            return 'vue';
+        } elseif (file_exists(resource_path('js/Components/Login.jsx'))) {
+            return 'react';
+        }
+        return null;
+    }
+}

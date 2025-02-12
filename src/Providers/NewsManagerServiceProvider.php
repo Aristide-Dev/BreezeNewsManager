@@ -34,6 +34,12 @@ class NewsManagerServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__ . '/../../resources/views' => resource_path('views/vendor/newsmanager'),
             ], 'newsmanager-views');
+
+            // Enregistrement des commandes artisan
+            $this->commands([
+                \AristechDev\NewsManager\Console\Commands\InstallNewsPackage::class,
+                \AristechDev\NewsManager\Console\Commands\InstallNewsModules::class,
+            ]);
         }
     }
 
@@ -49,12 +55,5 @@ class NewsManagerServiceProvider extends ServiceProvider
             __DIR__ . '/../../config/news.php',
             'news'
         );
-
-        // Enregistrer la commande artisan si l'application tourne en console
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                \AristechDev\NewsManager\Console\Commands\InstallNewsPackage::class,
-            ]);
-        }
     }
 } 
