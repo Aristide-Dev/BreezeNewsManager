@@ -30,46 +30,39 @@ class InstallNewsPackage extends Command
      */
     public function handle(): void
     {
-        // Vérifier si Laravel Breeze est installé
+        // Vérification et installation automatique de Laravel Breeze
         if (!class_exists(\Laravel\Breeze\BreezeServiceProvider::class)) {
             $this->error("Laravel Breeze n'est pas installé. Installation automatique en cours...");
-
-            // utilisation de Symfony Process pour exécuter "composer require laravel/breeze"
             $process = new Process(['composer', 'require', 'laravel/breeze']);
             $process->setWorkingDirectory(base_path());
             $process->run(function ($type, $buffer) {
                 $this->line($buffer);
             });
-
             if (!$process->isSuccessful()) {
                 $this->error("L'installation de Laravel Breeze a échoué. Veuillez l'installer manuellement : composer require laravel/breeze");
                 return;
             }
-
             $this->info('Laravel Breeze a été installé avec succès.');
         }
 
         $this->info("Début de l'installation du package NewsManager.");
 
-        // 1. Détermination de la stack à utiliser
+        // 1. Choix de la stack pour Breeze
         $stack = $this->option('stack');
         if (!$stack) {
-            $stack = $this->autoDetectStack();
-            if ($stack) {
-                $this->info("Stack auto-détectée : $stack");
-            } else {
-                $stack = $this->choice(
-                    'Quelle stack frontale souhaitez-vous installer pour Laravel Breeze ?',
-                    ['blade', 'react', 'vue'],
-                    0
-                );
-            }
+            $stack = $this->choice(
+                'Quelle stack frontale souhaitez-vous installer pour Laravel Breeze ?',
+                ['blade', 'react', 'vue'],
+                0
+            );
         } else {
-            $this->info("Stack spécifiée par option : $stack");
+            $this->info("Stack spécifiée par option : " . $stack);
         }
 
-        // Appel de la commande Breeze pour installer le stack sélectionné
-        $this->call('php artisan breeze:install', ['stack' => $stack]);
+        $this->info("Stack sélectionnée : " . $stack);
+
+        // Appel de la commande Breeze pour installer le stack choisi
+        $this->call('breeze:install', ['stack' => $stack]);
 
         // 2. Choix des modules à installer (après l'installation du stack)
         $availableModules = ['news', 'media', 'documents'];

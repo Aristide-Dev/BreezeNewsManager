@@ -9,9 +9,12 @@ class InstallNewsModules extends Command
     /**
      * La signature de la commande.
      *
+     * Vous pouvez passer l'option --modules pour spécifier directement,
+     * sinon la commande conduit l'utilisateur à un choix interactif.
+     *
      * @var string
      */
-    protected $signature = 'news:modules';
+    protected $signature = 'news:modules {--modules= : Liste des modules à installer (séparés par une virgule, ou "all" pour tout installer)}';
 
     /**
      * La description de la commande.
@@ -34,14 +37,26 @@ class InstallNewsModules extends Command
             'documents' => ['newsmanager-documents-config'],
         ];
 
-        // Demande à l'utilisateur s'il veut installer tous les modules
-        if ($this->confirm('Voulez-vous installer tous les modules (actualités, médias, documents) ?', true)) {
-            $modulesToInstall = array_keys($availableModules);
+        $modulesToInstall = [];
+
+        // Vérifier si une option --modules est passée
+        $modulesOption = $this->option('modules');
+        if ($modulesOption) {
+            if (strtolower(trim($modulesOption)) === 'all') {
+                $modulesToInstall = array_keys($availableModules);
+            } else {
+                $inputModules = array_map('trim', explode(',', $modulesOption));
+                $modulesToInstall = array_intersect($inputModules, array_keys($availableModules));
+            }
         } else {
-            $modulesToInstall = [];
-            foreach ($availableModules as $module => $tags) {
-                if ($this->confirm('Installer le module ' . ucfirst($module) . ' ?', false)) {
-                    $modulesToInstall[] = $module;
+            // Demande interactive
+            if ($this->confirm('Voulez-vous installer tous les modules (actualités, médias, documents) ?', true)) {
+                $modulesToInstall = array_keys($availableModules);
+            } else {
+                foreach ($availableModules as $module => $tags) {
+                    if ($this->confirm('Installer le module ' . ucfirst($module) . ' ?', false)) {
+                        $modulesToInstall[] = $module;
+                    }
                 }
             }
         }
