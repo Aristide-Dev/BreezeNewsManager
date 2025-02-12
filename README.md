@@ -82,7 +82,7 @@ composer require aristechdev/news-manager:1.0.0
 4. **Lancez l'installation interactive :**
 
    ```bash
-   php artisan news:install
+   php artisan breeze:news
    ```
 
 ---
@@ -92,14 +92,14 @@ composer require aristechdev/news-manager:1.0.0
 Lancez la commande d'installation interactive avec :
 
 ```bash
-php artisan news:install
+php artisan breeze:news
 ```
 
 Cette commande guide l'utilisateur via des prompts pour définir le nom du package, choisir la stack frontale (Blade, React ou Vue) et réaliser les premières configurations.  
 Pour les environnements automatisés ou CI/CD, utilisez l'option suivante pour désactiver l'interaction manuelle :
 
 ```bash
-php artisan news:install --stack=blade --no-interaction
+php artisan breeze:news --stack=blade --no-interaction
 ```
 
 ---
@@ -113,7 +113,7 @@ Grâce à cette architecture, il est facile d'ajouter ou de modifier des modules
 
 ## Automatisation du Processus d'Installation
 
-En lançant la commande `php artisan news:install`, l'ensemble du processus d'installation est automatisé :
+En lançant la commande `php artisan breeze:news`, l'ensemble du processus d'installation est automatisé :
 - Choix de la stack frontale.
 - Installation de Laravel Breeze.
 - Exécution des migrations.
