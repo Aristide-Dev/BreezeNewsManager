@@ -62,7 +62,7 @@ class InstallNewsPackage extends Command
         $this->info("Stack sélectionnée : " . $stack);
 
         // Appel de la commande Breeze pour installer le stack choisi
-        $this->call('php artisan breeze:install', ['stack' => $stack]);
+        $this->call('breeze:install', ['stack' => $stack]);
 
         // 2. Choix des modules à installer (après l'installation du stack)
         $availableModules = ['news', 'media', 'documents'];
