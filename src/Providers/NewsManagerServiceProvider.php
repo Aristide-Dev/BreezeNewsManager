@@ -26,6 +26,17 @@ class NewsManagerServiceProvider extends ServiceProvider
         // Autres configurations...
     }
 
+    public function register()
+    {
+        $this->commands([
+            \AristechDev\NewsManager\Console\Commands\InstallNewsPackageReact::class,
+            \AristechDev\NewsManager\Console\Commands\InstallNewsModules::class,
+            \AristechDev\NewsManager\Console\Commands\InstallNewsPackageBlade::class,
+            \AristechDev\NewsManager\Console\Commands\InstallNewsPackageReact::class,
+            \AristechDev\NewsManager\Console\Commands\InstallNewsPackageVue::class,
+        ]);
+    }
+
     private function detectStack(): string
     {
         if (File::exists(base_path('resources/views/welcome.blade.php'))) {

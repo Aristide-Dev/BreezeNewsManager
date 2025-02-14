@@ -45,18 +45,18 @@ class InstallNewsPackageBlade extends Command
         }
 
         // 2. Copier les Controllers spécifiques Blade
-        $sourceControllers = __DIR__ . '/../../src/Controllers/Blade';
+        $sourceControllers = __DIR__ . '/../../../src/Http/Controllers/Blade';
         $destinationControllers = app_path('Http/Controllers');
         $this->copyDirectoryIfExists($sourceControllers, $destinationControllers, 'Controllers Blade');
 
         // 3. Copier les Routes spécifiques Blade
-        $sourceRoutes = __DIR__ . '/../../routes/Blade';
+        $sourceRoutes = __DIR__ . '/../../../routes/Blade';
         $destinationRoutes = base_path('routes');
         $this->copyDirectoryIfExists($sourceRoutes, $destinationRoutes, 'Routes Blade');
 
         // 4. Copier les Vues spécifiques Blade
-        $sourceViews = __DIR__ . '/../../resources/Blade';
-        $destinationViews = resource_path('views/vendor');
+        $sourceViews = __DIR__ . '/../../../resources/Blade';
+        $destinationViews = resource_path('views');
         $this->copyDirectoryIfExists($sourceViews, $destinationViews, 'Vues Blade');
 
         // 5. Appeler la commande Breeze pour installer la stack Blade

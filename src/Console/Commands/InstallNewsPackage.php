@@ -52,15 +52,15 @@ class InstallNewsPackage extends Command
         switch ($stack) {
             case 'react':
                 $this->info("Lancement de l'installation spécifique pour la stack React...");
-                $this->call('news:install:react');
+                $this->call('aristechnews:install:react');
                 break;
             case 'blade':
                 $this->info("Lancement de l'installation spécifique pour la stack Blade...");
-                $this->call('news:install:blade');
+                $this->call('aristechnews:install:blade');
                 break;
             case 'vue':
                 $this->info("Lancement de l'installation spécifique pour la stack VueJS...");
-                $this->call('news:install:vue');
+                $this->call('aristechnews:install:vue');
                 break;
             default:
                 $this->warn("Aucune sous-commande définie pour la stack {$stack}.");

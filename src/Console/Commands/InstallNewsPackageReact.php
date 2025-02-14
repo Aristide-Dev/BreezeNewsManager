@@ -38,31 +38,31 @@ class InstallNewsPackageReact extends Command
 
         // Étape 2 : Copier les Controllers (s'ils existent)
         $this->copyDirectoryIfExists(
-            __DIR__ . '/../../src/Controllers/' . ucfirst($stack),
-            app_path('Http/Controllers/' . ucfirst($stack)),
+            __DIR__ . '/../../../src/Http/Controllers/' . ucfirst($stack),
+            app_path('Http/Controllers/'),
             'Controllers'
         );
 
         // Étape 3 : Copier les Routes
         $this->copyDirectoryIfExists(
-            __DIR__ . '/../../routes/' . ucfirst($stack),
-            base_path('routes/newsmanager/' . ucfirst($stack)),
+            __DIR__ . '/../../../routes/' . ucfirst($stack),
+            base_path('routes/newsmanager/'),
             'Routes'
         );
 
         // Étape 4 : Copier les Vues
         // Pour React, nous copions à la fois le dossier "Js" et "views" de React.
         $this->copyDirectoryIfExists(
-            __DIR__ . '/../../resources/React/views',
-            resource_path('views/' . ucfirst($stack)),
-            'Vues'
+            __DIR__ . '/../../../resources',
+            resource_path('/'),
+            'React Views'
         );
         // Vous pouvez également copier d'autres dossiers spécifiques (comme "Js")
-        $this->copyDirectoryIfExists(
-            __DIR__ . '/../../resources/React/Js',
-            resource_path('js/' . ucfirst($stack)),
-            'Fichiers JS'
-        );
+        // $this->copyDirectoryIfExists(
+        //     __DIR__ . '/../../resources/React/Js',
+        //     resource_path('js/' . ucfirst($stack)),
+        //     'Fichiers JS'
+        // );
 
         // Étape 5 : Installer Laravel Breeze pour la stack React
         $this->info("Installation de Laravel Breeze pour React...");

@@ -31,8 +31,8 @@ class InstallNewsPackageVue extends Command
         }
 
         // Copier le répertoire de vues pour VueJS
-        $sourceViews = __DIR__ . '/../../resources/VueJs';
-        $destinationViews = resource_path('views/vendor/newsmanager/VueJs');
+        $sourceViews = __DIR__ . '/../../../resources/VueJs';
+        $destinationViews = resource_path('/');
         if (!File::isDirectory($destinationViews)) {
             File::makeDirectory($destinationViews, 0755, true);
         }
@@ -43,8 +43,8 @@ class InstallNewsPackageVue extends Command
         }
 
         // Copier les routes pour VueJS
-        $sourceRoutes = __DIR__ . '/../../routes/VueJS';
-        $destinationRoutes = base_path('routes/newsmanager/VueJS');
+        $sourceRoutes = __DIR__ . '/../../../routes/VueJS';
+        $destinationRoutes = base_path('routes');
         if (!File::isDirectory($destinationRoutes)) {
             File::makeDirectory($destinationRoutes, 0755, true);
         }
