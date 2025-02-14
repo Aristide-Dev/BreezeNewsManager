@@ -12,7 +12,7 @@ class InstallNewsPackage extends Command
      *
      * @var string
      */
-    protected $signature = 'aristechnews:install {--stack= : La stack frontale à utiliser pour Breeze} {--modules= : Modules à installer (séparés par une virgule, ou "all" pour tout installer)}';
+    protected $signature = 'aristechnews:breeze:install {--stack= : La stack frontale à utiliser pour Breeze} {--modules= : Modules à installer (séparés par une virgule, ou "all" pour tout installer)}';
 
     /**
      * La description de la commande.
