@@ -75,10 +75,10 @@ Vous pouvez installer le package en **production** ou en **développement** sans
 
 Selon la technologie frontale souhaitée, le package propose des commandes d'installation dédiées :
 
-- Pour la stack **Blade** :
+- Pour la stack **No stack** :
 
   ```bash
-  php artisan aristechnews:install:breeze
+  php artisan aristechnews:breeze:news
 
 - Pour la stack **Blade** :
 

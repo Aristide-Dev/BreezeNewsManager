@@ -20,22 +20,35 @@ class InstallNewsPackageReact extends Command
      *
      * @var string
      */
-    protected $description = 'Installation du package NewsManager pour la stack React (copie des controllers, routes et vues)';
+    protected $description = 'Commande d\'installation du package NewsManager pour la stack React';
 
     /**
      * Exécute la commande.
      */
     public function handle(): void
     {
-        $this->info('=== Installation de NewsManager pour la stack React ===');
+        $this->info('Installation du package NewsManager pour la stack React.');
 
-        // Étape 1 : Vérifier et installer Laravel Breeze si nécessaire
-        $this->checkAndInstallBreeze();
-        $this->installLDepe();
+        // Vérifier et installer Laravel Breeze s'il n'est pas présent
+        if (!class_exists(\Laravel\Breeze\BreezeServiceProvider::class)) {
+            $this->error('Laravel Breeze n\'est pas installé. Installation automatique en cours...');
+            $process = new Process(['composer', 'require', 'laravel/breeze']);
+            $process->setWorkingDirectory(base_path());
+            $process->run(function ($type, $buffer) {
+                $this->line($buffer);
+            });
+            if (!$process->isSuccessful()) {
+                $this->error("L'installation de Laravel Breeze a échoué. Veuillez l'installer manuellement : composer require laravel/breeze");
+                return;
+            }
+            $this->info('Laravel Breeze a été installé avec succès.');
+        }
 
-        // Pour cet exemple, nous fixons la stack à "react".
-        $stack = 'react';
-        $this->info("Stack sélectionnée : " . $stack);
+        // Copier le répertoire de vues pour React depuis le package vers l'application Laravel
+        $sourceViews      = __DIR__ . '/../../resources/React/views';
+        $destinationViews = resource_path('/');
+
+        
 
         // Étape 2 : Copier les Controllers (s'ils existent)
         $this->copyDirectoryIfExists(
@@ -58,45 +71,67 @@ class InstallNewsPackageReact extends Command
             resource_path('/'),
             'React Views'
         );
-        // Vous pouvez également copier d'autres dossiers spécifiques (comme "Js")
-        // $this->copyDirectoryIfExists(
-        //     __DIR__ . '/../../resources/React/Js',
-        //     resource_path('js/' . ucfirst($stack)),
-        //     'Fichiers JS'
-        // );
 
-        // Étape 5 : Installer Laravel Breeze pour la stack React
-        // $this->info("Installation de Laravel Breeze pour React...");
-        // $this->call('breeze:install', [
-        //     'stack' => $stack,
-        //     '--no-interaction' => true,
-        // ]);
+        if (!File::isDirectory($destinationViews)) {
+            File::makeDirectory($destinationViews, 0755, true);
+        }
 
-        $this->info('Installation de NewsManager pour React terminée.');
-        $this->info('N’oubliez pas d’exécuter "php artisan migrate" et "npm install && npm run dev" pour finaliser la configuration.');
+        if (File::copyDirectory($sourceViews, $destinationViews)) {
+            $this->info('Les vues React ont été copiées dans ' . $destinationViews);
+        } else {
+            $this->error('La copie des vues React a échoué.');
+        }
+
+        // Installation des dépendances spécifiques à la stack React
+        $this->installDependencies();
+
+        // Appeler la commande Breeze pour installer le stack React
+        $this->call('breeze:install', ['stack' => 'react']);
+
+        // Compiler les assets front-end
+        $this->info("Compilation des assets front-end pour React...");
+        $process = new Process(['npm', 'run', 'build']);
+        $process->setWorkingDirectory(base_path());
+        $process->run(function ($type, $buffer) {
+            $this->line($buffer);
+        });
+        if (!$process->isSuccessful()) {
+            $this->error("La compilation des assets front-end a échoué.");
+            return;
+        }
+        $this->info('Compilation des assets front-end terminée.');
+
+        $this->info('Installation du package NewsManager pour React terminée.');
     }
 
     /**
-     * Vérifie si Laravel Breeze est installé et l'installe si nécessaire.
+     * Installe les dépendances NPM spécifiques à la stack React.
      */
-    protected function checkAndInstallBreeze(): void
+    protected function installDependencies(): void
     {
-        if (!class_exists(\Laravel\Breeze\BreezeServiceProvider::class)) {
-            $this->error('Laravel Breeze n\'est pas installé. Installation automatique en cours...');
-            $process = new Process(['composer', 'require', 'laravel/breeze']);
+        $dependencies = [
+            'lucide-react',
+            'react-file-icon',
+            '@lexical/react'
+        ];
+
+        foreach ($dependencies as $dependency) {
+            $this->info("Installation de la dépendance {$dependency}...");
+            $process = new Process(['npm', 'install', $dependency]);
             $process->setWorkingDirectory(base_path());
             $process->run(function ($type, $buffer) {
                 $this->line($buffer);
             });
             if (!$process->isSuccessful()) {
-                $this->error("L'installation de Laravel Breeze a échoué. Veuillez l'installer manuellement : composer require laravel/breeze");
-                exit(1);
+                $this->error("L'installation de {$dependency} a échoué.");
+                return;
+            } else {
+                $this->info("{$dependency} a été installé avec succès.");
             }
-            $this->info('Laravel Breeze a été installé avec succès.');
-        } else {
-            $this->info('Laravel Breeze est déjà installé.');
         }
     }
+
+    
 
     /**
      * Copie un répertoire source vers un répertoire destination s'il existe.
@@ -121,32 +156,4 @@ class InstallNewsPackageReact extends Command
             $this->warn("Aucun dossier {$label} trouvé à copier depuis {$source}.");
         }
     }
-
-
-    /**
-     * Installe la dépendance lucide-react via NPM.
-     */
-    protected function installDependencies(): void
-    {
-        $data = [
-            'lucide-react',
-            'react-file-icon'
-        ];
-        foreach ($data as $dependency) {
-            $this->info("Installation de la dépendance {$dependency}...");
-            $process = new Process(['npm', 'install', $dependency]);
-            $process->setWorkingDirectory(base_path());
-            $process->run(function ($type, $buffer) {
-                $this->line($buffer);
-            });
-            if (!$process->isSuccessful()) {
-                $this->error("L'installation de {$dependency} a échoué.");
-                return;
-            }else{
-                $this->info("{$dependency} a été installé avec succès.");
-            }
-        }
-        // $this->info('lucide-react et react-file-icon ont été installés avec succès.');
-    }
-
 }
