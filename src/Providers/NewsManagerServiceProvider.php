@@ -39,29 +39,30 @@ class NewsManagerServiceProvider extends ServiceProvider
 
     private function detectStack(): string
     {
+        $stack = ''; 
         if (File::exists(base_path('resources/views/welcome.blade.php'))) {
-            return 'blade';
+            $stack = 'blade';
         }
 
         if (File::exists(base_path('resources/Js/Pages/Welcome.jsx'))) {
-            return 'react';
+            $stack = 'react';
         }
 
         if (File::exists(base_path('resources/Js/Pages/Welcome.tsx'))) {
-            return 'react';
+            $stack = 'react';
         }
 
         if (File::exists(base_path('resources/Js/Pages/Welcome.vue'))) {
-            return 'vue';
+            $stack = 'vue';
         }
 
         if (File::exists(base_path('resources/js/app.js'))) {
             $appJsContent = File::get(base_path('resources/js/app.js'));
             if (strpos($appJsContent, 'import { createApp } from \'vue\'') !== false) {
-                return 'vue';
+                $stack = 'vue';
             }
             if (strpos($appJsContent, 'import React from \'react\'') !== false) {
-                return 'react';
+                $stack = 'react';
             }
         }
 
@@ -71,7 +72,7 @@ class NewsManagerServiceProvider extends ServiceProvider
         }
 
         // Fallback if no valid stack is detected
-        \Log::warning('No valid frontend stack detected. Defaulting to Blade.');
+        \Log::warning('No valid frontend stack detected. Defaulting to React.');
         return 'React'; // or handle more gracefully
     }
 }
