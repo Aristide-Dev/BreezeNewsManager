@@ -128,6 +128,12 @@ class InstallNewsPackageReact extends Command
                 return;
             } else {
                 $this->info("{$dependency} a été installé avec succès.");
+
+                // Appel de la commande Breeze pour installer le stack choisi
+                $this->call('php artisan breeze:install', [
+                    'stack' => $stack,
+                    '--no-interaction' => true,
+                ]);
             }
         }
     }
