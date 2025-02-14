@@ -29,7 +29,7 @@ class NewsManagerServiceProvider extends ServiceProvider
     public function register()
     {
         $this->commands([
-            \AristechDev\NewsManager\Console\Commands\InstallNewsPackageReact::class,
+            \AristechDev\NewsManager\Console\Commands\InstallNewsPackage::class,
             \AristechDev\NewsManager\Console\Commands\InstallNewsModules::class,
             \AristechDev\NewsManager\Console\Commands\InstallNewsPackageBlade::class,
             \AristechDev\NewsManager\Console\Commands\InstallNewsPackageReact::class,
