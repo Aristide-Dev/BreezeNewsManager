@@ -78,19 +78,24 @@ Selon la technologie frontale souhaitée, le package propose des commandes d'ins
 - Pour la stack **Blade** :
 
   ```bash
-  php artisan news:install:blade
+  php artisan aristechnews:install:breeze
+
+- Pour la stack **Blade** :
+
+  ```bash
+  php artisan aristechnews:install:blade
   ```
 
 - Pour la stack **React** :
 
   ```bash
-  php artisan news:install:react
+  php artisan aristechnews:install:react
   ```
 
 - Pour la stack **Vue** :
 
   ```bash
-  php artisan news:install:vue
+  php artisan aristechnews:install:vue
   ```
 
 Ces commandes vérifieront la présence de Laravel Breeze, créeront automatiquement le fichier `welcome.blade.php` adapté et lanceront la commande `breeze:install` avec la stack correspondante.
@@ -100,13 +105,13 @@ Ces commandes vérifieront la présence de Laravel Breeze, créeront automatique
 Ensuite, pour ajouter les modules complémentaires (news, media et documents), utilisez la commande :
 
 ```bash
-php artisan news:modules
+php artisan aristechnews:modules
 ```
 
 Vous pouvez également passer l'option `--modules` pour une installation non-interactive (exemple, installer uniquement "news" et "media") :
 
 ```bash
-php artisan news:modules --modules=news,media
+php artisan aristechnews:modules --modules=news,media
 ```
 
 ---
