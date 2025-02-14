@@ -27,10 +27,10 @@ class InstallNewsPackage extends Command
     public function handle(): void
     {
         $this->info("=== Installation du package NewsManager ===");
-
+    
         // Vérification et installation de Laravel Breeze
         $this->checkAndInstallBreeze();
-
+    
         // Choix de la stack frontale
         $stack = $this->option('stack');
         if (!$stack) {
@@ -41,13 +41,13 @@ class InstallNewsPackage extends Command
             );
         }
         $this->info("Stack sélectionnée : " . $stack);
-
+    
         // Appel de la commande Breeze pour installer le stack choisi
         $this->call('breeze:install', [
             'stack' => $stack,
             '--no-interaction' => true,
         ]);
-
+    
         // Déclenchement de la sous-commande spécifique en fonction du stack
         switch ($stack) {
             case 'react':
@@ -66,12 +66,35 @@ class InstallNewsPackage extends Command
                 $this->warn("Aucune sous-commande définie pour la stack {$stack}.");
                 break;
         }
-
-        // Optionnel : sélection des modules (news, media, documents)
-        // ... (ici vous pouvez ajouter la logique de sélection des modules si souhaité)
-
+    
+        // Installation de la dépendance lucide-react via NPM
+        $this->info("Installation de la dépendance lucide-react...");
+        $process = new Process(['npm', 'install', 'lucide-react']);
+        $process->setWorkingDirectory(base_path());
+        $process->run(function ($type, $buffer) {
+            $this->line($buffer);
+        });
+        if (!$process->isSuccessful()) {
+            $this->error("L'installation de lucide-react a échoué.");
+            return;
+        }
+        $this->info('lucide-react a été installé avec succès.');
+    
+        // Compilation des assets front-end
+        $this->info("Compilation des assets front-end...");
+        $process = new Process(['npm', 'run', 'build']);
+        $process->setWorkingDirectory(base_path());
+        $process->run(function ($type, $buffer) {
+            $this->line($buffer);
+        });
+        if (!$process->isSuccessful()) {
+            $this->error("La compilation des assets front-end a échoué.");
+            return;
+        }
+        $this->info('Compilation des assets front-end terminée.');
+    
         $this->info("Installation du package NewsManager terminée.");
-        $this->info("N'oubliez pas d'exécuter 'php artisan migrate' et 'npm install && npm run dev' pour finaliser l'installation.");
+        $this->info("N'oubliez pas d'exécuter 'php artisan migrate' pour finaliser l'installation.");
     }
 
     /**

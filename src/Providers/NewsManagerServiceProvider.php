@@ -65,7 +65,13 @@ class NewsManagerServiceProvider extends ServiceProvider
             }
         }
 
-        // Valeur par défaut si aucune stack n'est détectée
-        return 'blade';
+
+        if ($stack === 'blade' || $stack === 'react' || $stack === 'vue') {
+            return $stack;
+        }
+
+        // Fallback if no valid stack is detected
+        \Log::warning('No valid frontend stack detected. Defaulting to Blade.');
+        return 'React'; // or handle more gracefully
     }
 }
