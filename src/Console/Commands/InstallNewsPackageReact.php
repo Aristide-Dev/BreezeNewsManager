@@ -31,6 +31,7 @@ class InstallNewsPackageReact extends Command
 
         // Étape 1 : Vérifier et installer Laravel Breeze si nécessaire
         $this->checkAndInstallBreeze();
+        $this->installLDepe();
 
         // Pour cet exemple, nous fixons la stack à "react".
         $stack = 'react';
@@ -65,11 +66,11 @@ class InstallNewsPackageReact extends Command
         // );
 
         // Étape 5 : Installer Laravel Breeze pour la stack React
-        $this->info("Installation de Laravel Breeze pour React...");
-        $this->call('breeze:install', [
-            'stack' => $stack,
-            '--no-interaction' => true,
-        ]);
+        // $this->info("Installation de Laravel Breeze pour React...");
+        // $this->call('breeze:install', [
+        //     'stack' => $stack,
+        //     '--no-interaction' => true,
+        // ]);
 
         $this->info('Installation de NewsManager pour React terminée.');
         $this->info('N’oubliez pas d’exécuter "php artisan migrate" et "npm install && npm run dev" pour finaliser la configuration.');
@@ -125,19 +126,27 @@ class InstallNewsPackageReact extends Command
     /**
      * Installe la dépendance lucide-react via NPM.
      */
-    protected function installLucideReact(): void
+    protected function installDependencies(): void
     {
-        $this->info("Installation de la dépendance lucide-react...");
-        $process = new Process(['npm', 'install', 'lucide-react']);
-        $process->setWorkingDirectory(base_path());
-        $process->run(function ($type, $buffer) {
-            $this->line($buffer);
-        });
-        if (!$process->isSuccessful()) {
-            $this->error("L'installation de lucide-react a échoué.");
-            return;
+        $data = [
+            'lucide-react',
+            'react-file-icon'
+        ];
+        foreach ($data as $dependency) {
+            $this->info("Installation de la dépendance {$dependency}...");
+            $process = new Process(['npm', 'install', $dependency]);
+            $process->setWorkingDirectory(base_path());
+            $process->run(function ($type, $buffer) {
+                $this->line($buffer);
+            });
+            if (!$process->isSuccessful()) {
+                $this->error("L'installation de {$dependency} a échoué.");
+                return;
+            }else{
+                $this->info("{$dependency} a été installé avec succès.");
+            }
         }
-        $this->info('lucide-react a été installé avec succès.');
+        // $this->info('lucide-react et react-file-icon ont été installés avec succès.');
     }
 
 }
