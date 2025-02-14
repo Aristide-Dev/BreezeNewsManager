@@ -20,15 +20,18 @@
       "AristechDev\\NewsManager\\": "src/"
     }
   },
+  "require": {
+    "php": ">=8.1",
+    "illuminate/support": "^10.0|^11.0"
+  },
   "extra": {
     "laravel": {
       "providers": [
         "AristechDev\\NewsManager\\Providers\\NewsManagerServiceProvider"
       ]
+    },
+    "branch-alias": {
+      "dev-master": "1.0.x-dev"
     }
-  },
-  "require": {
-    "php": ">=8.1",
-    "illuminate/support": "^10.0|^11.0"
   }
 }
