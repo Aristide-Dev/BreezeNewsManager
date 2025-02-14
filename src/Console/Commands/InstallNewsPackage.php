@@ -7,47 +7,33 @@ use Symfony\Component\Process\Process;
 
 class InstallNewsPackage extends Command
 {
-    /**
-     * La signature de la commande.
-     *
-     * @var string
-     */
     protected $signature = 'aristechnews:breeze:news {--stack= : La stack frontale à utiliser pour Breeze} {--modules= : Modules à installer (séparés par une virgule, ou "all" pour tout installer)}';
-
-    /**
-     * La description de la commande.
-     *
-     * @var string
-     */
     protected $description = 'Commande interactive pour installer NewsManager, configurer Laravel Breeze et choisir les modules à installer';
 
-    /**
-     * Exécute la commande.
-     */
     public function handle(): void
     {
         $this->info("=== Installation du package NewsManager ===");
-    
+
         // Vérification et installation de Laravel Breeze
         $this->checkAndInstallBreeze();
-    
+
         // Choix de la stack frontale
         $stack = $this->option('stack');
         if (!$stack) {
             $stack = $this->choice(
                 'Quelle stack frontale souhaitez-vous installer pour Laravel Breeze ?',
                 ['blade', 'react', 'vue'],
-                0
+                1
             );
         }
         $this->info("Stack sélectionnée : " . $stack);
-    
+
         // Appel de la commande Breeze pour installer le stack choisi
         $this->call('breeze:install', [
             'stack' => $stack,
             '--no-interaction' => true,
         ]);
-    
+
         // Déclenchement de la sous-commande spécifique en fonction du stack
         switch ($stack) {
             case 'react':
@@ -66,7 +52,7 @@ class InstallNewsPackage extends Command
                 $this->warn("Aucune sous-commande définie pour la stack {$stack}.");
                 break;
         }
-    
+
         // Installation de la dépendance lucide-react via NPM
         $this->info("Installation de la dépendance lucide-react...");
         $process = new Process(['npm', 'install', 'lucide-react']);
@@ -79,7 +65,7 @@ class InstallNewsPackage extends Command
             return;
         }
         $this->info('lucide-react a été installé avec succès.');
-    
+
         // Compilation des assets front-end
         $this->info("Compilation des assets front-end...");
         $process = new Process(['npm', 'run', 'build']);
@@ -92,14 +78,11 @@ class InstallNewsPackage extends Command
             return;
         }
         $this->info('Compilation des assets front-end terminée.');
-    
+
         $this->info("Installation du package NewsManager terminée.");
         $this->info("N'oubliez pas d'exécuter 'php artisan migrate' pour finaliser l'installation.");
     }
 
-    /**
-     * Vérifie si Laravel Breeze est installé et l'installe si nécessaire.
-     */
     protected function checkAndInstallBreeze(): void
     {
         if (!class_exists(\Laravel\Breeze\BreezeServiceProvider::class)) {
