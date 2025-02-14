@@ -44,6 +44,12 @@ class InstallNewsPackageReact extends Command
             $this->info('Laravel Breeze a été installé avec succès.');
         }
 
+        // Installation des dépendances spécifiques à la stack React
+        $this->installDependencies();
+
+        // Appeler la commande Breeze pour installer le stack React
+        $this->call('breeze:install', ['stack' => 'react']);
+
         // Copier le répertoire de vues pour React depuis le package vers l'application Laravel
         $sourceViews      = __DIR__ . '/../../resources/React/views';
         $destinationViews = resource_path('/');
@@ -52,14 +58,14 @@ class InstallNewsPackageReact extends Command
 
         // Étape 2 : Copier les Controllers (s'ils existent)
         $this->copyDirectoryIfExists(
-            __DIR__ . '/../../../src/Http/Controllers/' . ucfirst($stack),
+            __DIR__ . '/../../../src/Http/Controllers/React',
             app_path('Http/Controllers/'),
             'Controllers'
         );
 
         // Étape 3 : Copier les Routes
         $this->copyDirectoryIfExists(
-            __DIR__ . '/../../../routes/' . ucfirst($stack),
+            __DIR__ . '/../../../routes/React',
             base_path('routes/'),
             'Routes'
         );
@@ -67,7 +73,7 @@ class InstallNewsPackageReact extends Command
         // Étape 4 : Copier les Vues
         // Pour React, nous copions à la fois le dossier "Js" et "views" de React.
         $this->copyDirectoryIfExists(
-            __DIR__ . '/../../../resources/' . ucfirst($stack),
+            __DIR__ . '/../../../resources/React',
             resource_path('/'),
             'React Views'
         );
@@ -81,12 +87,6 @@ class InstallNewsPackageReact extends Command
         } else {
             $this->error('La copie des vues React a échoué.');
         }
-
-        // Installation des dépendances spécifiques à la stack React
-        $this->installDependencies();
-
-        // Appeler la commande Breeze pour installer le stack React
-        $this->call('breeze:install', ['stack' => 'react']);
 
         // Compiler les assets front-end
         $this->info("Compilation des assets front-end pour React...");
@@ -112,7 +112,8 @@ class InstallNewsPackageReact extends Command
         $dependencies = [
             'lucide-react',
             'react-file-icon',
-            '@lexical/react'
+            '@lexical/react',
+            '@tailwindcss/forms',
         ];
 
         foreach ($dependencies as $dependency) {
