@@ -4,33 +4,81 @@ namespace AristechDev\NewsManager\Console\Commands;
 
 use Illuminate\Console\Command;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class InstallNewsPackage extends Command
 {
     /**
      * La signature de la commande.
      *
-     * Vous pouvez passer en option le stack et les modules,
-     * sinon la commande demande interactivement.
-     *
      * @var string
      */
-    protected $signature = 'breeze:news {--stack= : La stack frontale à utiliser pour Breeze} {--modules= : Modules à installer (séparés par une virgule, ou "all" pour tout installer)}';
+    protected $signature = 'news:install {--stack= : La stack frontale à utiliser pour Breeze} {--modules= : Modules à installer (séparés par une virgule, ou "all" pour tout installer)}';
 
     /**
      * La description de la commande.
      *
      * @var string
      */
-    protected $description = 'Commande artisan interactive pour installer le package NewsManager, configurer Laravel Breeze et choisir les modules à installer';
+    protected $description = 'Commande interactive pour installer NewsManager, configurer Laravel Breeze et choisir les modules à installer';
 
     /**
      * Exécute la commande.
      */
     public function handle(): void
     {
-        // Vérification et installation automatique de Laravel Breeze
+        $this->info("=== Installation du package NewsManager ===");
+
+        // Vérification et installation de Laravel Breeze
+        $this->checkAndInstallBreeze();
+
+        // Choix de la stack frontale
+        $stack = $this->option('stack');
+        if (!$stack) {
+            $stack = $this->choice(
+                'Quelle stack frontale souhaitez-vous installer pour Laravel Breeze ?',
+                ['blade', 'react', 'vue'],
+                0
+            );
+        }
+        $this->info("Stack sélectionnée : " . $stack);
+
+        // Appel de la commande Breeze pour installer le stack choisi
+        $this->call('breeze:install', [
+            'stack' => $stack,
+            '--no-interaction' => true,
+        ]);
+
+        // Déclenchement de la sous-commande spécifique en fonction du stack
+        switch ($stack) {
+            case 'react':
+                $this->info("Lancement de l'installation spécifique pour la stack React...");
+                $this->call('news:install:react');
+                break;
+            case 'blade':
+                $this->info("Lancement de l'installation spécifique pour la stack Blade...");
+                $this->call('news:install:blade');
+                break;
+            case 'vue':
+                $this->info("Lancement de l'installation spécifique pour la stack VueJS...");
+                $this->call('news:install:vue');
+                break;
+            default:
+                $this->warn("Aucune sous-commande définie pour la stack {$stack}.");
+                break;
+        }
+
+        // Optionnel : sélection des modules (news, media, documents)
+        // ... (ici vous pouvez ajouter la logique de sélection des modules si souhaité)
+
+        $this->info("Installation du package NewsManager terminée.");
+        $this->info("N'oubliez pas d'exécuter 'php artisan migrate' et 'npm install && npm run dev' pour finaliser l'installation.");
+    }
+
+    /**
+     * Vérifie si Laravel Breeze est installé et l'installe si nécessaire.
+     */
+    protected function checkAndInstallBreeze(): void
+    {
         if (!class_exists(\Laravel\Breeze\BreezeServiceProvider::class)) {
             $this->error("Laravel Breeze n'est pas installé. Installation automatique en cours...");
             $process = new Process(['composer', 'require', 'laravel/breeze']);
@@ -44,89 +92,5 @@ class InstallNewsPackage extends Command
             }
             $this->info('Laravel Breeze a été installé avec succès.');
         }
-
-        $this->info("Début de l'installation du package NewsManager.");
-
-        // 1. Choix de la stack pour Breeze
-        $stack = $this->option('stack');
-        if (!$stack) {
-            $stack = $this->choice(
-                'Quelle stack frontale souhaitez-vous installer pour Laravel Breeze ?',
-                ['blade', 'react', 'vue'],
-                0
-            );
-        } else {
-            $this->info("Stack spécifiée par option : " . $stack);
-        }
-
-        $this->info("Stack sélectionnée : " . $stack);
-
-        // Appel de la commande Breeze pour installer le stack choisi
-        $this->call('breeze:install', ['stack' => $stack]);
-
-        // 2. Choix des modules à installer (après l'installation du stack)
-        $availableModules = ['news', 'media', 'documents'];
-        $modulesOption  = $this->option('modules');
-
-        if ($modulesOption) {
-            $modules = (strtolower($modulesOption) === 'all')
-                ? $availableModules
-                : array_intersect(
-                    array_map('trim', explode(',', $modulesOption)),
-                    $availableModules
-                );
-        } else {
-            if ($this->confirm('Voulez-vous installer tous les modules (actualités, médias, documents) ?', true)) {
-                $modules = $availableModules;
-            } else {
-                $modules = [];
-                foreach ($availableModules as $module) {
-                    if ($this->confirm('Installer le module ' . ucfirst($module) . ' ?', false)) {
-                        $modules[] = $module;
-                    }
-                }
-            }
-        }
-
-        if (empty($modules)) {
-            $this->warn('Aucun module sélectionné. Le package sera installé sans modules additionnels.');
-        } else {
-            $this->info('Modules sélectionnés : ' . implode(', ', $modules));
-            // Association de chaque module aux tags de publication correspondants
-            $moduleTags = [
-                'news'      => ['newsmanager-config', 'newsmanager-migrations'],
-                'media'     => ['newsmanager-media-config'],
-                'documents' => ['newsmanager-documents-config'],
-            ];
-
-            foreach ($modules as $module) {
-                if (isset($moduleTags[$module])) {
-                    foreach ($moduleTags[$module] as $tag) {
-                        $this->call('vendor:publish', ['--tag' => $tag]);
-                    }
-                }
-            }
-        }
-
-        $this->info('Installation du package NewsManager terminée.');
-        $this->info('Pensez à lancer "php artisan migrate" pour exécuter les migrations.');
-    }
-
-    /**
-     * Tente d'auto-détecter la stack à utiliser.
-     *
-     * @return string|null
-     */
-    private function autoDetectStack(): ?string
-    {
-        // Heuristique simple : détecte Blade, Vue ou React en fonction de l'existence de certains fichiers.
-        if (file_exists(resource_path('views/auth/login.blade.php'))) {
-            return 'blade';
-        } elseif (file_exists(resource_path('js/Pages/Login.vue'))) {
-            return 'vue';
-        } elseif (file_exists(resource_path('js/Components/Login.jsx'))) {
-            return 'react';
-        }
-        return null;
     }
 }

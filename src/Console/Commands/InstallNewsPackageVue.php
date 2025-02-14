@@ -3,35 +3,66 @@
 namespace AristechDev\NewsManager\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\File;
 use Symfony\Component\Process\Process;
 
-class InstallNewsPackageVue extends Command
+class InstallNewsPackage extends Command
 {
-    /**
-     * La signature de la commande.
-     *
-     * @var string
-     */
-    protected $signature = 'news:install:vue';
+    protected $signature = 'news:install {--stack= : La stack frontale à utiliser pour Breeze} {--modules= : Modules à installer (séparés par une virgule, ou "all" pour tout installer)}';
+    protected $description = 'Commande interactive pour installer NewsManager, configurer Laravel Breeze et choisir les modules à installer';
 
-    /**
-     * La description de la commande.
-     *
-     * @var string
-     */
-    protected $description = 'Commande d\'installation du package NewsManager pour la stack Vue';
-
-    /**
-     * Exécute la commande.
-     */
     public function handle(): void
     {
-        $this->info('Installation du package NewsManager pour la stack Vue.');
+        $this->info("=== Installation du package NewsManager ===");
 
-        // Vérifier et installer Laravel Breeze s'il n'est pas présent
+        // Vérification et installation de Laravel Breeze
+        $this->checkAndInstallBreeze();
+
+        // Choix de la stack frontale
+        $stack = $this->option('stack');
+        if (!$stack) {
+            $stack = $this->choice(
+                'Quelle stack frontale souhaitez-vous installer pour Laravel Breeze ?',
+                ['blade', 'react', 'vue'],
+                0
+            );
+        }
+        $this->info("Stack sélectionnée : " . $stack);
+
+        // Installation de Breeze avec la stack choisie
+        $this->call('breeze:install', [
+            'stack' => $stack,
+            '--no-interaction' => true,
+        ]);
+
+        // Appel de la sous-commande spécifique selon la stack
+        switch ($stack) {
+            case 'react':
+                $this->info("Lancement de l'installation spécifique pour la stack React...");
+                $this->call('news:install:react');
+                break;
+            case 'blade':
+                $this->info("Lancement de l'installation spécifique pour la stack Blade...");
+                $this->call('news:install:blade');
+                break;
+            case 'vue':
+                $this->info("Lancement de l'installation spécifique pour la stack Vue...");
+                $this->call('news:install:vue');
+                break;
+            default:
+                $this->warn("Aucune sous-commande définie pour la stack {$stack}.");
+                break;
+        }
+
+        // Ici, vous pouvez ajouter la logique pour la sélection des modules si besoin
+
+        $this->info("Installation du package NewsManager terminée.");
+        $this->info("N'oubliez pas d'exécuter 'php artisan migrate' et 'npm install && npm run dev' pour finaliser l'installation.");
+    }
+
+    protected function checkAndInstallBreeze(): void
+    {
         if (!class_exists(\Laravel\Breeze\BreezeServiceProvider::class)) {
-            $this->error('Laravel Breeze n\'est pas installé. Installation automatique en cours...');
+            $this->error("Laravel Breeze n'est pas installé. Installation automatique en cours...");
             $process = new Process(['composer', 'require', 'laravel/breeze']);
             $process->setWorkingDirectory(base_path());
             $process->run(function ($type, $buffer) {
@@ -43,24 +74,5 @@ class InstallNewsPackageVue extends Command
             }
             $this->info('Laravel Breeze a été installé avec succès.');
         }
-
-        // Copier le répertoire de vues pour Vue
-        $sourceViews      = __DIR__ . '/../../resources/VueJs';
-        $destinationViews = resource_path('views/vendor/newsmanager/VueJs');
-
-        if (!File::isDirectory($destinationViews)) {
-            File::makeDirectory($destinationViews, 0755, true);
-        }
-
-        if (File::copyDirectory($sourceViews, $destinationViews)) {
-            $this->info('Les vues Vue ont été copiées dans ' . $destinationViews);
-        } else {
-            $this->error('La copie des vues Vue a échoué.');
-        }
-
-        // Appeler la commande Breeze pour installer la stack Vue
-        $this->call('breeze:install', ['stack' => 'vue']);
-
-        $this->info('Installation du package NewsManager pour Vue terminée.');
     }
 }

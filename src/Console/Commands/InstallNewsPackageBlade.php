@@ -3,8 +3,8 @@
 namespace AristechDev\NewsManager\Console\Commands;
 
 use Illuminate\Console\Command;
-use Symfony\Component\Process\Process;
 use Illuminate\Support\Facades\File;
+use Symfony\Component\Process\Process;
 
 class InstallNewsPackageBlade extends Command
 {
@@ -27,9 +27,9 @@ class InstallNewsPackageBlade extends Command
      */
     public function handle(): void
     {
-        $this->info('Installation du package NewsManager pour la stack Blade.');
+        $this->info('=== Installation du package NewsManager pour la stack Blade ===');
 
-        // Vérifier et installer Laravel Breeze s'il n'est pas présent
+        // 1. Vérifier et installer Laravel Breeze si nécessaire
         if (!class_exists(\Laravel\Breeze\BreezeServiceProvider::class)) {
             $this->error('Laravel Breeze n\'est pas installé. Installation automatique en cours...');
             $process = new Process(['composer', 'require', 'laravel/breeze']);
@@ -44,23 +44,53 @@ class InstallNewsPackageBlade extends Command
             $this->info('Laravel Breeze a été installé avec succès.');
         }
 
-        // Copier l'ensemble des vues se trouvant dans le dossier resources/Blade/views du package
-        $sourceViews      = __DIR__ . '/../../resources/Blade';
-        $destinationViews = resource_path('views/vendor/newsmanager/Blade');
+        // 2. Copier les Controllers spécifiques Blade
+        $sourceControllers = __DIR__ . '/../../src/Controllers/Blade';
+        $destinationControllers = app_path('Http/Controllers');
+        $this->copyDirectoryIfExists($sourceControllers, $destinationControllers, 'Controllers Blade');
 
-        if (!File::isDirectory($destinationViews)) {
-            File::makeDirectory($destinationViews, 0755, true);
-        }
+        // 3. Copier les Routes spécifiques Blade
+        $sourceRoutes = __DIR__ . '/../../routes/Blade';
+        $destinationRoutes = base_path('routes');
+        $this->copyDirectoryIfExists($sourceRoutes, $destinationRoutes, 'Routes Blade');
 
-        if (File::copyDirectory($sourceViews, $destinationViews)) {
-            $this->info('Les vues Blade ont été copiées dans ' . $destinationViews);
+        // 4. Copier les Vues spécifiques Blade
+        $sourceViews = __DIR__ . '/../../resources/Blade';
+        $destinationViews = resource_path('views/vendor');
+        $this->copyDirectoryIfExists($sourceViews, $destinationViews, 'Vues Blade');
+
+        // 5. Appeler la commande Breeze pour installer la stack Blade
+        $this->info("Installation de Laravel Breeze pour la stack Blade...");
+        $this->call('breeze:install', [
+            'stack' => 'blade',
+            '--no-interaction' => true,
+        ]);
+
+        $this->info("Installation du package NewsManager pour Blade terminée.");
+        $this->info("N'oubliez pas d'exécuter 'php artisan migrate' et 'npm install && npm run dev' pour finaliser l'installation.");
+    }
+
+    /**
+     * Copie un répertoire source vers un répertoire destination s'il existe.
+     *
+     * @param string $source      Le chemin source dans le package
+     * @param string $destination Le chemin destination dans l'application hôte
+     * @param string $label       Label pour les messages affichés
+     */
+    protected function copyDirectoryIfExists(string $source, string $destination, string $label): void
+    {
+        if (File::exists($source)) {
+            $this->info("Copie des {$label} depuis {$source} vers {$destination}...");
+            if (!File::isDirectory($destination)) {
+                File::makeDirectory($destination, 0755, true);
+            }
+            if (File::copyDirectory($source, $destination)) {
+                $this->info("Les {$label} ont été copiés avec succès.");
+            } else {
+                $this->error("La copie des {$label} a échoué.");
+            }
         } else {
-            $this->error('La copie des vues Blade a échoué.');
+            $this->warn("Aucun dossier {$label} trouvé à copier depuis {$source}.");
         }
-
-        // Appeler la commande Breeze pour installer le stack Blade
-        $this->call('breeze:install', ['stack' => 'blade']);
-
-        $this->info('Installation du package NewsManager pour Blade terminée.');
     }
 }
