@@ -53,7 +53,7 @@ class InstallNewsPackageReact extends Command
         // Étape 4 : Copier les Vues
         // Pour React, nous copions à la fois le dossier "Js" et "views" de React.
         $this->copyDirectoryIfExists(
-            __DIR__ . '/../../../resources',
+            __DIR__ . '/../../../resources/' . ucfirst($stack),
             resource_path('/'),
             'React Views'
         );
