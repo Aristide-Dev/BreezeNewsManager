@@ -43,6 +43,18 @@ class NewsManagerServiceProvider extends ServiceProvider
             return 'blade';
         }
 
+        if (File::exists(base_path('resources/Js/Pages/Welcome.jsx'))) {
+            return 'react';
+        }
+
+        if (File::exists(base_path('resources/Js/Pages/Welcome.tsx'))) {
+            return 'react';
+        }
+
+        if (File::exists(base_path('resources/Js/Pages/Welcome.vue'))) {
+            return 'vue';
+        }
+
         if (File::exists(base_path('resources/js/app.js'))) {
             $appJsContent = File::get(base_path('resources/js/app.js'));
             if (strpos($appJsContent, 'import { createApp } from \'vue\'') !== false) {
