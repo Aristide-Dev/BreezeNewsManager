@@ -46,7 +46,7 @@ class InstallNewsPackageReact extends Command
         // Étape 3 : Copier les Routes
         $this->copyDirectoryIfExists(
             __DIR__ . '/../../../routes/' . ucfirst($stack),
-            base_path('routes/newsmanager/'),
+            base_path('routes/'),
             'Routes'
         );
 

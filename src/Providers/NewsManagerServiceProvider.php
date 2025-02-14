@@ -21,7 +21,7 @@ class NewsManagerServiceProvider extends ServiceProvider
             $this->loadRoutesFrom($routeFile);
         }
 
-        $this->loadViewsFrom(__DIR__ . '/../../resources/' . $viewsFolder, 'newsmanager');
+        $this->loadViewsFrom(__DIR__ . '/../../resources/' . $viewsFolder, '');
 
         // Autres configurations...
     }
