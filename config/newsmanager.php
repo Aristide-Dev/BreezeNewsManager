@@ -10,5 +10,5 @@ return [
     |
     */
 
-    'option_exemple' => 'ma_valeur_par_defaut'
+    'stack' => 'react'
 ]; 

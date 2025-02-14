@@ -1,7 +1,8 @@
 # Documentation NewsManager
 
-NewsManager est un package Laravel modulable dédié à la gestion des actualités dans votre application. Conçu pour s'intégrer de manière transparente dans l'écosystème Laravel, il regroupe plusieurs fonctionnalités essentielles pour administrer facilement des contenus sous forme de news, de médias (images, vidéos, etc.) et de documents.  
-Le package offre également une intégration avec Laravel Breeze pour mettre en place un système d'authentification complet, avec la possibilité de choisir la stack frontale (Blade, React ou Vue). Enfin, l'installation des modules (news, media, documents) se fait via une commande dédiée.
+NewsManager est un package Laravel modulable dédié à la gestion des actualités dans votre application. Conçu pour s'intégrer de manière transparente dans l'écosystème Laravel, il regroupe plusieurs fonctionnalités essentielles pour administrer facilement des contenus sous forme de news, de médias (images, vidéos, etc.) et de documents.
+
+Le package offre également une intégration avec Laravel Breeze, avec des commandes d'installation dédiées pour chaque stack (Blade, React, Vue) et la possibilité d'ajouter des modules optionnels via une commande séparée.
 
 ---
 
@@ -31,126 +32,168 @@ $$$$$$$/  $$/   $$/ $$$$$$$$/ $$/   $$/ $$/      $$/ $$$$$$$$/ $$/   $$/
 ## Fonctionnalités Clés
 
 - **Gestion complète des contenus :**
-  - **Actualités :** Créez, modifiez, affichez et supprimez des articles ou news.
-  - **Médias :** Téléversement, gestion et affichage d'images, vidéos ou autres supports.
-  - **Documents :** Importez et organisez vos documents (PDF, Word, etc.) avec la possibilité de les associer à des actualités ou de les gérer de manière indépendante.
+  - **Actualités :** Créez, modifiez, affichez et supprimez des articles/news.
+  - **Médias :** Téléversez et gérez images, vidéos et autres supports.
+  - **Documents :** Importez et organisez des documents (PDF, Word, etc.) associés aux actualités ou indépendants.
 
 - **Intégration avec Laravel Breeze :**
-  - **Installation automatisée de Breeze :** Le package intègre une commande artisan personnalisée (`breeze:news`) qui interroge l'utilisateur (ou lit la configuration par défaut) pour choisir la stack frontale à utiliser (Blade, React ou Vue).
-  - **Scaffolding d'authentification :** Selon le choix, la commande lance l'installation de Breeze via `breeze:install`, configurant ainsi les routes, contrôleurs et vues d'authentification.
-  - **Installation conditionnée :** Si Laravel Breeze n'est pas présent, le package propose d'exécuter l'installation (ou affiche une instruction pour l'installation manuelle via Composer).
+  - **Installation automatisée :** Des commandes d'installation dédiées permettent de configurer Laravel Breeze sur la stack choisie (Blade, React ou Vue).
+  - **Installation personnalisée des modules :** Une commande spécifique (`news:modules`) permet d'ajouter les modules optionnels (news, media, documents).
 
-- **Installation et gestion des modules :**
-  - **Commande dédiée :** Après la configuration initiale avec `breeze:news`, utilisez la commande `news:modules` pour choisir et installer les modules complémentaires (news, media, documents).
-  - **Installation modulaire :** Sélectionnez via une interface interactive les modules souhaités ou installez-les l'un après l'autre selon vos besoins.
+- **Modularité et Extensibilité :**
+  - Ressources (vues, routes, contrôleurs, migrations) importées dynamiquement en fonction de la stack et des modules activés.
+  - Commandes artisan dédiées pour faciliter l'installation et l'ajout des modules.
 
 ---
 
 ## Installation
 
-### 1. Via Composer (version stable)
+### Via Composer
 
-Installez la version stable du package via Composer :
+Vous pouvez installer le package en **production** ou en **développement** sans utiliser la notation `:dev-master`.
 
-```bash
-composer require aristechdev/news-manager:1.0.1
-```
+- **En Production (version stable) :**
 
-### 2. Installation avec dépôt local
+  ```bash
+  composer require aristechdev/news-manager:1.0.0
+  ```
 
-1. **Ajoutez le repository**  
-   Dans le fichier `composer.json` à la racine de votre application Laravel, ajoutez :
+- **En Développement (version en cours, branche de développement) :**
 
-   ```json
-   {
-       "repositories": [
-           {
-               "type": "path",
-               "url": "./packages/AristechDev/NewsManager"
-           }
-       ]
-   }
-   ```
+  ```bash
+  composer require aristechdev/news-manager:dev-develop
+  ```
 
-2. **Installez le package** :
-
-   ```bash
-   composer require aristechdev/news-manager:dev-master
-   ```
-
-3. **Publiez la configuration (si besoin)** :
-
-   ```bash
-   php artisan vendor:publish --tag=newsmanager-config
-   ```
+> **Remarque :**  
+> Nous ne recommandons pas l'utilisation de `:dev-master`. Utilisez la version stable `1.0.0` pour la production et la branche `dev-develop` pour le développement.
 
 ---
 
-## Configuration Interactive
+## Installation Interactive
 
-### A. Installation de Laravel Breeze et configuration du package
+### A. Installation de la Stack
 
-Lancez la commande interactive suivante pour installer Laravel Breeze et configurer la stack frontale :
+Selon la technologie frontale souhaitée, le package propose des commandes d'installation dédiées :
 
-```bash
-php artisan breeze:news
-```
+- Pour la stack **Blade** :
 
-Cette commande effectue les tâches suivantes :
+  ```bash
+  php artisan news:install:blade
+  ```
 
-- Vérifie que Laravel Breeze est installé (et propose de l'installer sinon).
-- Propose de choisir automatiquement ou manuellement la stack frontale à utiliser (Blade, React, Vue).
-- Lance l'installation de Breeze avec la commande `breeze:install` et configure les éléments de base du package.
+- Pour la stack **React** :
 
-Pour un fonctionnement non interactif (utile en CI/CD) :
+  ```bash
+  php artisan news:install:react
+  ```
 
-```bash
-php artisan breeze:news --stack=blade --no-interaction
-```
+- Pour la stack **Vue** :
 
-### B. Installation des modules complémentaires
+  ```bash
+  php artisan news:install:vue
+  ```
 
-Une fois la configuration initiale terminée, vous pouvez ajouter les modules supplémentaires (news, media, documents) via la commande :
+Ces commandes vérifieront la présence de Laravel Breeze, créeront automatiquement le fichier `welcome.blade.php` adapté et lanceront la commande `breeze:install` avec la stack correspondante.
+
+### B. Installation des Modules
+
+Ensuite, pour ajouter les modules complémentaires (news, media et documents), utilisez la commande :
 
 ```bash
 php artisan news:modules
 ```
 
-Cette commande vous permettra de sélectionner interactivement les modules à installer ou d'installer l'ensemble des modules.
+Vous pouvez également passer l'option `--modules` pour une installation non-interactive (exemple, installer uniquement "news" et "media") :
+
+```bash
+php artisan news:modules --modules=news,media
+```
 
 ---
 
-## Structure Modulaire et Extensible
+## Configuration
 
-Le package est organisé en modules distincts :  
-- **Contrôleurs, modèles, routes, vues, migrations** pour la gestion des actualités, médias et documents.  
-- Une architecture en dossiers facilitant la maintenance et l'extension des fonctionnalités en fonction des besoins de votre application.
+Après l'installation, adaptez le fichier de configuration `config/newsmanager.php` afin de définir la stack active et la liste des modules à charger :
+
+```php
+return [
+    'stack'   => env('NEWSMANAGER_STACK', 'blade'), // blade, react ou vue
+    'modules' => env('NEWSMANAGER_MODULES', 'news,media,documents') !== '' 
+                    ? array_map('trim', explode(',', env('NEWSMANAGER_MODULES', 'news,media,documents')))
+                    : [],
+    // Autres options de configuration...
+];
+```
+
+Définissez également les variables d'environnement dans votre fichier `.env` :
+
+```dotenv
+NEWSMANAGER_STACK=blade
+NEWSMANAGER_MODULES=news,media,documents
+```
 
 ---
 
-## Automatisation du Processus d'Installation
+## Structure et Organisation
 
-En lançant `php artisan breeze:news`, l'ensemble du processus d'installation est automatisé :
-- Choix de la stack frontale et installation de Breeze.
-- Publication de la configuration de base et des migrations.
-- Instructions d'utilisation (exécution de "php artisan migrate" et compilation des assets via `npm`).
+Le package est structuré de manière modulaire pour permettre une grande flexibilité :
 
-Par la suite, la commande `news:modules` permet d'ajouter ou de modifier les modules installés.
+```
+packages/AristechDev/NewsManager/
+├── config/
+│   ├── news.php
+│   └── newsmanager.php
+├── resources/
+│   ├── Blade/
+│   │   └── views/
+│   │       ├── index.blade.php
+│   │       └── welcome.blade.php
+│   ├── React/
+│   │   └── views/
+│   ├── VueJs/
+│   │   └── views/
+│   └── views/   (vues génériques)
+├── routes/
+│   ├── web.php         (routes pour Blade)
+│   ├── react.php       (routes pour React)
+│   └── vue.php         (routes pour Vue)
+└── src/
+    ├── Console/
+    │   ├── Commands/
+    │   │   ├── InstallNewsPackageBlade.php
+    │   │   ├── InstallNewsPackageReact.php
+    │   │   ├── InstallNewsPackageVue.php
+    │   │   └── InstallNewsModules.php
+    ├── Database/
+    │   └── migrations/
+    ├── Http/
+    │   └── Controllers/
+    │       ├── Blade/
+    │       ├── React/
+    │       └── VueJs/
+    └── Providers/
+        └── NewsManagerServiceProvider.php
+```
+
+Les vues, routes et contrôleurs sont importés dynamiquement en fonction de la stack active et des modules activés dans la configuration.
+
+---
+
+## Utilisation
+
+Une fois le package installé et configuré :
+
+1. Vérifiez et adaptez le fichier de configuration `config/newsmanager.php`.
+2. Exécutez les migrations :
+
+   ```bash
+   php artisan migrate
+   ```
+
+3. Utilisez le package pour gérer vos contenus de manière modulaire selon vos besoins.
 
 ---
 
 ## Licence
 
 Ce package est sous licence **MIT**.
-
----
-
-## Utilisation
-
-Par défaut, le package charge ses routes sous le préfixe `newsmanager`.  
-Pour accéder à la gestion des actualités, rendez-vous sur l'URL correspondante dans votre application Laravel.
-
----
-
-Cette documentation vous offre une présentation claire de l'installation et de la configuration du package NewsManager.  
-N'hésitez pas à adapter ou personnaliser ces instructions selon les besoins spécifiques de votre projet.
