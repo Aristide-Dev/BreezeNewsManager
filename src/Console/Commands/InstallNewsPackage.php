@@ -26,10 +26,10 @@ class InstallNewsPackage extends Command
         $this->info("Stack sélectionnée : " . $stack);
 
         // Appel de la commande Breeze pour installer le stack choisi
-        $this->call('breeze:install', [
-            'stack' => $stack,
-            '--no-interaction' => true,
-        ]);
+        // $this->call('breeze:install', [
+        //     'stack' => $stack,
+        //     '--no-interaction' => true,
+        // ]);
 
         // Déclenchement de la sous-commande spécifique en fonction de la stack choisie
         switch ($stack) {
