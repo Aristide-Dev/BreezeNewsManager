@@ -13,7 +13,7 @@ class InstallNewsPackageReact extends Command
      *
      * @var string
      */
-    protected $signature = 'news:install:react';
+    protected $signature = 'aristechnews:install:react';
 
     /**
      * La description de la commande.

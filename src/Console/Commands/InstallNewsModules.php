@@ -14,7 +14,7 @@ class InstallNewsModules extends Command
      *
      * @var string
      */
-    protected $signature = 'news:modules {--modules= : Liste des modules à installer (séparés par une virgule, ou "all" pour tout installer)}';
+    protected $signature = 'aristechnews:modules {--modules= : Liste des modules à installer (séparés par une virgule, ou "all" pour tout installer)}';
 
     /**
      * La description de la commande.

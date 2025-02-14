@@ -13,7 +13,7 @@ class InstallNewsPackageBlade extends Command
      *
      * @var string
      */
-    protected $signature = 'news:install:blade';
+    protected $signature = 'aristechnews:install:blade';
 
     /**
      * La description de la commande.
