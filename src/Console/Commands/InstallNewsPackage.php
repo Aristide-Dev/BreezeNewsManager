@@ -15,7 +15,7 @@ class InstallNewsPackage extends Command
         $this->info("=== Installation du package NewsManager ===");
 
         // Vérification et installation de Laravel Breeze
-        $this->checkAndInstallBreeze();
+        // $this->checkAndInstallBreeze();
 
         // Choix de la stack frontale
         $stack = $this->option('stack');
