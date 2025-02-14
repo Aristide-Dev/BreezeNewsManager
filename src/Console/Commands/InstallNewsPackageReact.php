@@ -92,6 +92,8 @@ class InstallNewsPackageReact extends Command
                 exit(1);
             }
             $this->info('Laravel Breeze a été installé avec succès.');
+        } else {
+            $this->info('Laravel Breeze est déjà installé.');
         }
     }
 
@@ -118,4 +120,24 @@ class InstallNewsPackageReact extends Command
             $this->warn("Aucun dossier {$label} trouvé à copier depuis {$source}.");
         }
     }
+
+
+    /**
+     * Installe la dépendance lucide-react via NPM.
+     */
+    protected function installLucideReact(): void
+    {
+        $this->info("Installation de la dépendance lucide-react...");
+        $process = new Process(['npm', 'install', 'lucide-react']);
+        $process->setWorkingDirectory(base_path());
+        $process->run(function ($type, $buffer) {
+            $this->line($buffer);
+        });
+        if (!$process->isSuccessful()) {
+            $this->error("L'installation de lucide-react a échoué.");
+            return;
+        }
+        $this->info('lucide-react a été installé avec succès.');
+    }
+
 }
