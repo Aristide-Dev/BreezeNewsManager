@@ -47,29 +47,73 @@ class InstallNewsModules extends Command
         }
 
         foreach ($modulesToInstall as $moduleName) {
-            $moduleComponents = $this->modules[$moduleName];
-
             if (!isset($this->modules[$moduleName])) {
                 $this->error("Le module {$moduleName} n'existe pas.");
                 continue;
             }
 
+            $moduleComponents = $this->modules[$moduleName];
             if ($this->confirm("Voulez-vous installer le module {$moduleName} ?")) {
                 $this->installModule($moduleName, $moduleComponents, $stack);
             }
         }
 
-        if($modules === 'all')
-        {
-            $source = __DIR__ . "/../../../routes/{$stack}/{$moduleName}/web.php}";
-            $destination = base_path("routes/web.php");
-            $this->copyFileIfExists($source, $destination, "Routes du module {$moduleName}");
-        }else{
-            
-            $source = __DIR__ . "/../../../routes/{$stack}/{$moduleName}/{$components['routes']}";
-            $destination = base_path("routes/{$moduleName}");
-            $this->copyFileIfExists($source, $destination, "Routes du module {$moduleName}");
+        // Mise à jour du fichier web.php
+        $this->updateWebRoutes($modulesToInstall, $stack);
+    }
+
+    /**
+     * Met à jour le fichier web.php avec les routes des modules
+     */
+    protected function updateWebRoutes(array $installedModules, string $stack): void
+    {
+        $this->info("Mise à jour des routes dans web.php...");
+        
+        $webPhpPath = base_path('routes/web.php');
+        
+        // Créer une sauvegarde du fichier web.php original
+        if (File::exists($webPhpPath)) {
+            File::copy($webPhpPath, $webPhpPath . '.backup');
         }
+
+        // Copier le template web.php de base selon la stack
+        $templatePath = __DIR__ . "/../../../routes/{$stack}/all/web.php";
+        if (!File::exists($templatePath)) {
+            $this->error("Le template de routes pour la stack {$stack} n'existe pas.");
+            return;
+        }
+
+        // Copier le template web.php
+        File::copy($templatePath, $webPhpPath);
+
+        // Pour chaque module, copier ses routes dans le dossier approprié
+        foreach ($installedModules as $module) {
+            if (!isset($this->modules[$module])) {
+                continue;
+            }
+
+            $moduleRouteFile = __DIR__ . "/../../../routes/{$stack}/{$module}/{$this->modules[$module]['routes']}";
+            
+            if (File::exists($moduleRouteFile)) {
+                // Créer le répertoire des routes du module si nécessaire
+                $moduleRoutesDir = base_path("routes/{$module}");
+                if (!File::isDirectory($moduleRoutesDir)) {
+                    File::makeDirectory($moduleRoutesDir, 0755, true);
+                }
+
+                // Copier le fichier de routes du module
+                $destinationPath = "{$moduleRoutesDir}/{$this->modules[$module]['routes']}";
+                if (File::copy($moduleRouteFile, $destinationPath)) {
+                    $this->info("Routes du module {$module} copiées avec succès.");
+                } else {
+                    $this->error("Erreur lors de la copie des routes du module {$module}");
+                }
+            } else {
+                $this->warn("Fichier de routes introuvable pour le module {$module}");
+            }
+        }
+
+        $this->info('Le fichier web.php a été mis à jour avec succès.');
     }
 
     protected function installModule(string $moduleName, array $components, string $stack): void
