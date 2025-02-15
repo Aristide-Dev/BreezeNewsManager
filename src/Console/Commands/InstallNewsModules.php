@@ -7,7 +7,10 @@ use Illuminate\Support\Facades\File;
 
 class InstallNewsModules extends Command
 {
-    protected $signature = 'aristechnews:install:modules {--modules=all : Liste des modules à installer (séparés par une virgule, ou "all" pour tout installer) --stack=react : Stack à utiliser (blade ou react)}';
+    protected $signature = 'aristechnews:install:modules 
+        {--modules=all : Liste des modules à installer (séparés par une virgule, ou "all" pour tout installer)}
+        {--stack=react : Stack à utiliser (blade ou react)}';
+        
     protected $description = 'Installe les modules du package NewsManager';
 
     protected $modules = [
