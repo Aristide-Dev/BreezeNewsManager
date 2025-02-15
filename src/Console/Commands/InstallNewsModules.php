@@ -126,15 +126,16 @@ class InstallNewsModules extends Command
         // Copier les models (commun à toutes les stacks)
         if (isset($components['models'])) {
             foreach ($components['models'] as $model) {
-                $source = __DIR__ . "/../../../src/Models/{$moduleName}/{$model}";
-                $destination = app_path("Models/{$moduleName}");
+                $source = __DIR__ . "/../../Http/Models/{$model}";
+                $destination = app_path("Models");
                 $this->copyFileIfExists($source, $destination, "Model {$model}");
             }
         }
 
         // Copier les routes
         if (isset($components['routes'])) {
-            $source = __DIR__ . "/../../../routes/{$stack}/{$moduleName}/{$components['routes']}";
+            $source = __DIR__ . "/../../../routes/{$stack}/{$components['routes']}";
+            // $source = __DIR__ . "/../../../routes/{ucfirst($stack}/{$components['routes']}";
             $destination = base_path("routes/{$moduleName}");
             $this->copyFileIfExists($source, $destination, "Routes du module {$moduleName}");
         }
@@ -142,13 +143,66 @@ class InstallNewsModules extends Command
         // Copier les migrations
         if (isset($components['migrations'])) {
             foreach ($components['migrations'] as $migration) {
-                $source = __DIR__ . "/../../../database/migrations/{$migration}";
+                $source = __DIR__ . "/../../database/migrations/{$migration}";
                 $destination = database_path("migrations/{$migration}");
                 $this->copyFileIfExists($source, $destination, "Migration {$migration}");
             }
         }
 
         $this->info("Module {$moduleName} installé avec succès.");
+    }
+
+    /**
+     * Copie un fichier source vers une destination s'il existe
+     *
+     * @param string $source
+     * @param string $destination
+     * @param string $label
+     */
+    protected function copyFileIfExists(string $source, string $destinationDir, string $label): void
+    {
+        if (File::exists($source)) {
+            $this->info("Copie de {$label}...");
+            
+            if (!File::isDirectory($destinationDir)) {
+                File::makeDirectory($destinationDir, 0755, true);
+            }
+
+            $filename = basename($source);
+            $destinationPath = $destinationDir . '/' . $filename;
+
+            if (File::copy($source, $destinationPath)) {
+                $this->info("{$label} a été copié avec succès.");
+            } else {
+                $this->error("La copie de {$label} a échoué.");
+            }
+        } else {
+            $this->warn("{$label} n'existe pas dans le source.");
+        }
+    }
+
+    /**
+     * Copie un répertoire source vers un répertoire destination s'il existe.
+     *
+     * @param string $source
+     * @param string $destination
+     * @param string $label Label pour les messages affichés
+     */
+    protected function copyDirectoryIfExists(string $source, string $destination, string $label): void
+    {
+        if (File::exists($source)) {
+            $this->info("Copie des {$label} depuis {$source} vers {$destination}...");
+            if (!File::isDirectory($destination)) {
+                File::makeDirectory($destination, 0755, true);
+            }
+            if (File::copyDirectory($source, $destination)) {
+                $this->info("Les {$label} ont été copiés avec succès.");
+            } else {
+                $this->error("La copie des {$label} a échoué.");
+            }
+        } else {
+            $this->warn("Aucun dossier {$label} trouvé à copier depuis {$source}.");
+        }
     }
 
     // Méthodes utilitaires copyFileIfExists et copyDirectoryIfExists comme avant...

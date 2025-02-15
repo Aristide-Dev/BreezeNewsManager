@@ -27,9 +27,39 @@ class InstallNewsPackageReact extends Command
      */
     public function handle(): void
     {
-        $this->info('Installation du package NewsManager pour la stack React.');
+        $this->info('=== Installation du package NewsManager pour la stack React ===');
 
-        // Vérifier et installer Laravel Breeze s'il n'est pas présent
+        // Étape 1 : Vérifier et installer Laravel Breeze s'il n'est pas déjà installé
+        $this->checkAndInstallBreeze();
+
+        // Pour cet exemple, nous fixons la stack à "react"
+        $stack = 'react';
+        $this->info("Stack sélectionnée : " . $stack);
+
+        // Étape 2 : Installer les modules via la commande dédiée
+        $this->info('Installation des modules...');
+        $this->call('aristechnews:install:modules', [
+            '--stack' => $stack
+        ]);
+
+        // Étape 3 : Copier les fichiers de base pour React
+        $this->copyBaseReactFiles();
+
+        // Étape 4 : Installer les dépendances spécifiques à la stack React
+        $this->installDependencies();
+
+        // Étape 5 : Compiler les assets front-end
+        $this->compileAssets();
+
+        $this->info('Installation du package NewsManager pour React terminée.');
+        $this->info('N’oubliez pas d’exécuter "php artisan migrate" pour finaliser la configuration.');
+    }
+
+    /**
+     * Vérifie si Laravel Breeze est installé et l'installe si nécessaire.
+     */
+    protected function checkAndInstallBreeze(): void
+    {
         if (!class_exists(\Laravel\Breeze\BreezeServiceProvider::class)) {
             $this->error('Laravel Breeze n\'est pas installé. Installation automatique en cours...');
             $process = new Process(['composer', 'require', 'laravel/breeze']);
@@ -39,25 +69,28 @@ class InstallNewsPackageReact extends Command
             });
             if (!$process->isSuccessful()) {
                 $this->error("L'installation de Laravel Breeze a échoué. Veuillez l'installer manuellement : composer require laravel/breeze");
-                return;
+                exit(1);
             }
             $this->info('Laravel Breeze a été installé avec succès.');
+        } else {
+            $this->info('Laravel Breeze est déjà installé.');
+        }
+    }
+
+    /**
+     * Copie les fichiers de base pour React depuis le package vers le répertoire de l'application.
+     */
+    protected function copyBaseReactFiles(): void
+    {
+        $sourcePath = __DIR__ . '/../../../resources/React';
+        $destinationPath = resource_path('/');
+
+        $this->info("Copie des fichiers de base React depuis {$sourcePath} vers {$destinationPath}...");
+        if (!File::isDirectory($destinationPath)) {
+            File::makeDirectory($destinationPath, 0755, true);
         }
 
-        // Installer les modules via la commande dédiée
-        $this->info('Installation des modules...');
-        $this->call('aristechnews:install:modules --stack=react');
-
-        // Installation des dépendances spécifiques à la stack React
-        $this->installDependencies();
-
-        // Copier les fichiers de base React
-        // $this->copyBaseReactFiles();
-
-        // Compiler les assets front-end
-        $this->compileAssets();
-
-        $this->info('Installation du package NewsManager pour React terminée.');
+        $this->copyDirectoryIfExists($sourcePath, $destinationPath, 'React Views de base');
     }
 
     /**
@@ -82,40 +115,13 @@ class InstallNewsPackageReact extends Command
             if (!$process->isSuccessful()) {
                 $this->error("L'installation de {$dependency} a échoué.");
                 return;
-            } else {
-                $this->info("{$dependency} a été installé avec succès.");
             }
+            $this->info("{$dependency} a été installé avec succès.");
         }
-        
-        // Appel de la commande Breeze pour installer le stack choisi
-        $this->call('breeze:install', [
-            'stack' => 'react',
-            '--no-interaction' => true,
-        ]);
     }
 
     /**
-     * Copie les fichiers de base pour React
-     */
-    protected function copyBaseReactFiles(): void
-    {
-        $sourceViews = __DIR__ . '/../../resources/React';
-        $destinationViews = resource_path('/');
-
-        if (!File::isDirectory($destinationViews)) {
-            File::makeDirectory($destinationViews, 0755, true);
-        }
-
-        // Copier les fichiers de base React
-        $this->copyDirectoryIfExists(
-            __DIR__ . '/../../../resources/React',
-            resource_path('/'),
-            'React Views de base'
-        );
-    }
-
-    /**
-     * Compile les assets front-end
+     * Compile les assets front-end.
      */
     protected function compileAssets(): void
     {
@@ -135,9 +141,9 @@ class InstallNewsPackageReact extends Command
     /**
      * Copie un répertoire source vers un répertoire destination s'il existe.
      *
-     * @param string $source
-     * @param string $destination
-     * @param string $label Label pour les messages affichés
+     * @param string $source      Le chemin source dans le package
+     * @param string $destination Le chemin destination dans l'application hôte
+     * @param string $label       Label pour les messages affichés
      */
     protected function copyDirectoryIfExists(string $source, string $destination, string $label): void
     {
