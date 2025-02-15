@@ -46,9 +46,7 @@ class InstallNewsPackageReact extends Command
 
         // Installer les modules via la commande dédiée
         $this->info('Installation des modules...');
-        $this->call('aristechnews:install:modules', [
-            '--stack' => 'react'
-        ]);
+        $this->call('aristechnews:install:modules --stack=react');
 
         // Installation des dépendances spécifiques à la stack React
         $this->installDependencies();
