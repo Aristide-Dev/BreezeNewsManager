@@ -47,59 +47,17 @@ class InstallNewsPackageReact extends Command
         // Installation des dépendances spécifiques à la stack React
         $this->installDependencies();
 
-        // Appeler la commande Breeze pour installer le stack React
-        $this->call('breeze:install', ['stack' => 'react']);
+        // Installer les modules via la commande dédiée
+        $this->info('Installation des modules...');
+        $this->call('aristechnews:install:modules', [
+            '--stack' => 'react'
+        ]);
 
-        // Copier le répertoire de vues pour React depuis le package vers l'application Laravel
-        $sourceViews      = __DIR__ . '/../../resources/React/views';
-        $destinationViews = resource_path('/');
-
-        
-
-        // Étape 2 : Copier les Controllers (s'ils existent)
-        $this->copyDirectoryIfExists(
-            __DIR__ . '/../../../src/Http/Controllers/React',
-            app_path('Http/Controllers/'),
-            'Controllers'
-        );
-
-        // Étape 3 : Copier les Routes
-        $this->copyDirectoryIfExists(
-            __DIR__ . '/../../../routes/React',
-            base_path('routes/'),
-            'Routes'
-        );
-
-        // Étape 4 : Copier les Vues
-        // Pour React, nous copions à la fois le dossier "Js" et "views" de React.
-        $this->copyDirectoryIfExists(
-            __DIR__ . '/../../../resources/React',
-            resource_path('/'),
-            'React Views'
-        );
-
-        if (!File::isDirectory($destinationViews)) {
-            File::makeDirectory($destinationViews, 0755, true);
-        }
-
-        if (File::copyDirectory($sourceViews, $destinationViews)) {
-            $this->info('Les vues React ont été copiées dans ' . $destinationViews);
-        } else {
-            $this->error('La copie des vues React a échoué.');
-        }
+        // Copier les fichiers de base React
+        // $this->copyBaseReactFiles();
 
         // Compiler les assets front-end
-        $this->info("Compilation des assets front-end pour React...");
-        $process = new Process(['npm', 'run', 'build']);
-        $process->setWorkingDirectory(base_path());
-        $process->run(function ($type, $buffer) {
-            $this->line($buffer);
-        });
-        if (!$process->isSuccessful()) {
-            $this->error("La compilation des assets front-end a échoué.");
-            return;
-        }
-        $this->info('Compilation des assets front-end terminée.');
+        $this->compileAssets();
 
         $this->info('Installation du package NewsManager pour React terminée.');
     }
@@ -128,17 +86,53 @@ class InstallNewsPackageReact extends Command
                 return;
             } else {
                 $this->info("{$dependency} a été installé avec succès.");
-
-                // Appel de la commande Breeze pour installer le stack choisi
-                $this->call('php artisan breeze:install', [
-                    'stack' => $stack,
-                    '--no-interaction' => true,
-                ]);
             }
         }
+        
+        // Appel de la commande Breeze pour installer le stack choisi
+        $this->call('breeze:install', [
+            'stack' => 'react',
+            '--no-interaction' => true,
+        ]);
     }
 
-    
+    /**
+     * Copie les fichiers de base pour React
+     */
+    protected function copyBaseReactFiles(): void
+    {
+        $sourceViews = __DIR__ . '/../../resources/React';
+        $destinationViews = resource_path('/');
+
+        if (!File::isDirectory($destinationViews)) {
+            File::makeDirectory($destinationViews, 0755, true);
+        }
+
+        // Copier les fichiers de base React
+        $this->copyDirectoryIfExists(
+            __DIR__ . '/../../../resources/React',
+            resource_path('/'),
+            'React Views de base'
+        );
+    }
+
+    /**
+     * Compile les assets front-end
+     */
+    protected function compileAssets(): void
+    {
+        $this->info("Compilation des assets front-end pour React...");
+        $process = new Process(['npm', 'run', 'build']);
+        $process->setWorkingDirectory(base_path());
+        $process->run(function ($type, $buffer) {
+            $this->line($buffer);
+        });
+        if (!$process->isSuccessful()) {
+            $this->error("La compilation des assets front-end a échoué.");
+            return;
+        }
+        $this->info('Compilation des assets front-end terminée.');
+    }
 
     /**
      * Copie un répertoire source vers un répertoire destination s'il existe.

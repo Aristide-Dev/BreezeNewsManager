@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Report extends Model
+class Document extends Model
 {
     protected $fillable = ['title', 'description', 'category', 'tags', 'file_path', 'published_at'];
 

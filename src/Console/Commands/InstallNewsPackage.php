@@ -12,6 +12,9 @@ class InstallNewsPackage extends Command
 
     public function handle(): void
     {
+        // Afficher un en-tête stylisé
+        $this->displayHeader();
+
         $this->info("=== Installation du package NewsManager ===");
 
         // Choix de la stack frontale
@@ -24,12 +27,6 @@ class InstallNewsPackage extends Command
             );
         }
         $this->info("Stack sélectionnée : " . $stack);
-
-        // Appel de la commande Breeze pour installer le stack choisi
-        // $this->call('breeze:install', [
-        //     'stack' => $stack,
-        //     '--no-interaction' => true,
-        // ]);
 
         // Déclenchement de la sous-commande spécifique en fonction de la stack choisie
         switch ($stack) {
@@ -50,12 +47,28 @@ class InstallNewsPackage extends Command
                 break;
         }
 
-        /*
-         * Nous avons retiré l'installation manuelle des dépendances ici car chaque commande spécifique
-         * (notamment pour React) gère désormais l'installation de ses propres dépendances.
-         */
-
         $this->info("Installation du package NewsManager terminée.");
         $this->info("N'oubliez pas d'exécuter 'php artisan migrate' pour finaliser l'installation.");
+    }
+
+    /**
+     * Affiche un en-tête stylisé dans la console.
+     */
+    protected function displayHeader(): void
+    {
+        $header = <<<EOT
+        <bg=white;fg=black>
+         _______   _______   ________   ______   __       __  ________  _______         
+        /       \ /       \ /        | /      \ /  \     /  |/        |/       \
+        $$$$$$$  |$$$$$$$  |$$$$$$$$/ /$$$$$$  |$$  \   /$$ |$$$$$$$$/ $$$$$$$  |
+        $$ |  $$ |$$ |__$$ |$$ |__    $$ |__$$ |$$$  \ /$$$ |$$ |__    $$ |__$$ |
+        $$ |  $$ |$$    $$< $$    |   $$    $$ |$$$$  /$$$$ |$$    |   $$    $$<
+        $$ |  $$ |$$$$$$$  |$$$$$/    $$$$$$$$ |$$ $$ $$/$$ |$$$$$/    $$$$$$$  |
+        $$ |__$$ |$$ |  $$ |$$ |_____ $$ |  $$ |$$ |$$$/ $$ |$$ |_____ $$ |  $$ |
+        $$    $$/ $$ |  $$ |$$       |$$ |  $$ |$$ | $/  $$ |$$       |$$ |  $$ |
+        $$$$$$$/  $$/   $$/ $$$$$$$$/ $$/   $$/ $$/      $$/ $$$$$$$$/ $$/   $$/ 
+        </>
+        EOT;
+        $this->output->writeln($header);
     }
 }

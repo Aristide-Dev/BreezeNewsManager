@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Report;
+use App\Models\Document;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
 
-class ReportController extends Controller
+class DocumentController extends Controller
 {
     /**
      * Récupérer les rapports avec filtres (catégorie, recherche, pagination).
      */
     public function index(Request $request)
     {
-        $query = Report::query();
+        $query = Document::query();
 
         // Appliquer le filtre par catégorie
         if ($request->has('category') && $request->category !== 'Tous') {
@@ -39,15 +39,15 @@ class ReportController extends Controller
     /**
      * Télécharger un fichier de rapport.
      */
-    public function download(Report $report)
+    public function download(Document $documentt)
     {
-        if (!Storage::exists('reports/'.$report->file_path)) {
+        if (!Storage::exists('reports/'.$documentt->file_path)) {
             return response()->json(['error' => 'Fichier introuvable.'], 404);
         }
         
         try {
             
-            $pathToFile = storage_path('app/private/reports/' . $report->file_path);
+            $pathToFile = storage_path('app/private/reports/' . $documentt->file_path);
             return response()->download($pathToFile);
             
         } catch (\Throwable $th) {

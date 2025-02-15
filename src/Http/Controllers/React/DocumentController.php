@@ -3,7 +3,7 @@
 namespace AristechDev\NewsManager\Http\Controllers\React;
 
 use Inertia\Inertia;
-use App\Models\Report;
+use App\Models\Document;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
@@ -12,15 +12,15 @@ class ReportController extends Controller
 {
     public function index()
     {
-        $reports = Report::latest()->get();
-        $categories = Report::CATEGORIES_LIST;
-        return Inertia::render('Admin/Reports/Index', ['documents' => $reports, 'categories' => $categories]);
+        $reports = Document::latest()->get();
+        $categories = Document::CATEGORIES_LIST;
+        return Inertia::render('Admin/Documents/Index', ['documents' => $reports, 'categories' => $categories]);
     }
 
     public function create()
     {
-        $categories = Report::CATEGORIES_LIST;
-        return Inertia::render('Admin/Reports/Create', ['categories' => $categories]);
+        $categories = Document::CATEGORIES_LIST;
+        return Inertia::render('Admin/Documents/Create', ['categories' => $categories]);
     }
 
     public function store(Request $request)
@@ -46,7 +46,7 @@ class ReportController extends Controller
             }
         }
     
-        Report::create([
+        Document::create([
             'title' => $request->title,
             'description' => $request->description,
             'category' => $request->category,
@@ -55,16 +55,16 @@ class ReportController extends Controller
             'published_at' => $request->published_at,
         ]);
     
-        return redirect()->route('admin.reports.index')->with('success', 'Rapport créé avec succès.');
+        return redirect()->route('admin.documents.index')->with('success', 'Rapport créé avec succès.');
     }
 
-    public function edit(Report $report)
+    public function edit(Document $document)
     {
-        $categories = Report::CATEGORIES_LIST;
-        return Inertia::render('Admin/Reports/Create', ['report' => $report, 'categories' => $categories]);
+        $categories = Document::CATEGORIES_LIST;
+        return Inertia::render('Admin/Documents/Create', ['report' => $document, 'categories' => $categories]);
     }
 
-    public function update(Request $request, Report $report)
+    public function update(Request $request, Document $document)
     {
         // Validation
         $request->validate([
@@ -79,27 +79,27 @@ class ReportController extends Controller
             // Handle file upload if a new file is provided
             if ($request->hasFile('file')) {
                 // Delete the old file if it exists
-                if ($report->file_path && Storage::exists('reports/' . $report->file_path)) {
-                    Storage::delete('reports/' . $report->file_path);
+                if ($document->file_path && Storage::exists('reports/' . $document->file_path)) {
+                    Storage::delete('reports/' . $document->file_path);
                 }
     
                 // Store the new file with a unique name
                 $filePath = uniqid() . "_" . $request->file('file')->getClientOriginalName();
-                $report->file_path = $request->file('file')->storeAs('reports', $filePath, 'public');
+                $document->file_path = $request->file('file')->storeAs('reports', $filePath, 'public');
             }
     
             // Update the report
-            $report->update([
+            $document->update([
                 'title' => $request->title,
                 'description' => $request->description,
                 'category' => $request->category,
-                'tags' => $request->tags ?? $report->tags, // Retain existing tags if not provided
-                'file_path' => $report->file_path,
+                'tags' => $request->tags ?? $document->tags, // Retain existing tags if not provided
+                'file_path' => $document->file_path,
                 'published_at' => $request->published_at,
             ]);
     
             // Redirect back with a success message
-            return redirect()->route('admin.reports.index')->with('success', 'Rapport mis à jour avec succès.');
+            return redirect()->route('admin.documents.index')->with('success', 'Rapport mis à jour avec succès.');
         } catch (\Exception $e) {
             // Handle any errors that occur during the process
             return redirect()->back()->with('error', 'Une erreur est survenue lors de la mise à jour du rapport.')->withInput();
@@ -111,7 +111,7 @@ class ReportController extends Controller
         Storage::delete($report->file_path);
         $report->delete();
 
-        return redirect()->route('admin.reports.index')->with('success', 'Rapport supprimé avec succès.');
+        return redirect()->route('admin.documents.index')->with('success', 'Rapport supprimé avec succès.');
     }
 
     public function publicDocuments()

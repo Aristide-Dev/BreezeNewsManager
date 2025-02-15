@@ -111,9 +111,9 @@ export default function DocumentForm({ report = null, categories }) {
 
         if (report) {
             formData.append('_method', 'put');
-            router.post(route('admin.reports.update', report.id), formData);
+            router.post(route('admin.documents.update', report.id), formData);
         } else {
-            post(route('admin.reports.store'), formData);
+            post(route('admin.documents.store'), formData);
         }
     };
 

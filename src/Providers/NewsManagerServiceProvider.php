@@ -13,15 +13,15 @@ class NewsManagerServiceProvider extends ServiceProvider
         $stack = $this->detectStack();
 
         // Définir les dossiers pour les routes et les vues selon la stack détectée
-        $routesFolder = ucfirst($stack);
-        $viewsFolder = $stack === 'vue' ? 'vueJs' : ucfirst($stack);
+        // $routesFolder = ucfirst($stack);
+        // $viewsFolder = $stack === 'vue' ? 'vueJs' : ucfirst($stack);
 
-        // Charger les routes et les vues correspondantes
-        foreach (glob(__DIR__ . '/../../routes/' . $routesFolder . '/*.php') as $routeFile) {
-            $this->loadRoutesFrom($routeFile);
-        }
+        // // Charger les routes et les vues correspondantes
+        // foreach (glob(__DIR__ . '/../../routes/' . $routesFolder . '/*.php') as $routeFile) {
+        //     $this->loadRoutesFrom($routeFile);
+        // }
 
-        $this->loadViewsFrom(__DIR__ . '/../../resources/' . $viewsFolder, '');
+        // $this->loadViewsFrom(__DIR__ . '/../../resources/' . $viewsFolder, '');
 
         // Autres configurations...
     }

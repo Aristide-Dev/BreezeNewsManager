@@ -27,7 +27,7 @@ export default function AuthenticatedLayout({ header, children }) {
         { name: 'Tableau de Bord', route: 'dashboard', active: route().current('dashboard') },
         { name: 'Actualités', route: 'admin.news.index', active: route().current('admin.news.*')  },
         { name: 'Medias', route: 'admin.medias.index', active: route().current('admin.medias.*')  },
-        { name: 'Documents', route: 'admin.reports.index', active: route().current('admin.reports.*')  },
+        { name: 'Documents', route: 'admin.documents.index', active: route().current('admin.reports.*')  },
         // { name: 'Utilisateurs', route: 'admin.users.index', active: route().current('admin.users.*')  }
     ];
     if (user.role === 'admin') {

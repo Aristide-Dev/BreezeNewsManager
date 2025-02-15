@@ -3,78 +3,106 @@
 namespace AristechDev\NewsManager\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\File;
 
 class InstallNewsModules extends Command
 {
-    /**
-     * La signature de la commande.
-     *
-     * Vous pouvez passer l'option --modules pour spécifier directement,
-     * sinon la commande conduit l'utilisateur à un choix interactif.
-     *
-     * @var string
-     */
-    protected $signature = 'aristechnews:modules {--modules= : Liste des modules à installer (séparés par une virgule, ou "all" pour tout installer)}';
+    protected $signature = 'aristechnews:install:modules {--modules=all : Liste des modules à installer (séparés par une virgule, ou "all" pour tout installer) --stack=blade : Stack à utiliser (blade ou react)}';
+    protected $description = 'Installe les modules du package NewsManager';
 
-    /**
-     * La description de la commande.
-     *
-     * @var string
-     */
-    protected $description = 'Commande artisan pour choisir et installer les modules du package NewsManager';
+    protected $modules = [
+        'news' => [
+            'controllers' => ['NewsController.php'],
+            'models' => ['News.php'],
+            'routes' => 'news.php',
+            'migrations' => ['0002_02_02_00001_create_news_table.php']
+        ],
+        'media' => [
+            'controllers' => ['MediaController.php'],
+            'models' => ['Media.php'],
+            'routes' => 'media.php',
+            'migrations' => ['0002_02_02_00003_create_medias_table.php']
+        ],
+        'documents' => [
+            'controllers' => ['DocumentController.php'],
+            'models' => ['Document.php'],
+            'routes' => 'documents.php',
+            'migrations' => ['0002_02_02_00002_create_reports_table.php']
+        ]
+    ];
 
-    /**
-     * Exécute la commande.
-     */
     public function handle(): void
     {
-        $this->info('Installation des modules du package NewsManager.');
+        $stack = $this->option('stack');
+        $modules = $this->option('modules');
 
-        // Liste des modules disponibles et les tags à publier pour chacun
-        $availableModules = [
-            'news'      => ['newsmanager-config', 'newsmanager-migrations'],
-            'media'     => ['newsmanager-media-config'],
-            'documents' => ['newsmanager-documents-config'],
-        ];
+        $this->info("Installation des modules pour la stack {$stack}...");
 
         $modulesToInstall = [];
 
-        // Vérifier si une option --modules est passée
-        $modulesOption = $this->option('modules');
-        if ($modulesOption) {
-            if (strtolower(trim($modulesOption)) === 'all') {
-                $modulesToInstall = array_keys($availableModules);
-            } else {
-                $inputModules = array_map('trim', explode(',', $modulesOption));
-                $modulesToInstall = array_intersect($inputModules, array_keys($availableModules));
-            }
+        if ($modules === 'all') {
+            $modulesToInstall = array_keys($this->modules);
         } else {
-            // Demande interactive
-            if ($this->confirm('Voulez-vous installer tous les modules (actualités, médias, documents) ?', true)) {
-                $modulesToInstall = array_keys($availableModules);
-            } else {
-                foreach ($availableModules as $module => $tags) {
-                    if ($this->confirm('Installer le module ' . ucfirst($module) . ' ?', false)) {
-                        $modulesToInstall[] = $module;
-                    }
-                }
+            $modulesToInstall = explode(',', $modules);
+        }
+
+        foreach ($modulesToInstall as $moduleName) {
+            $moduleComponents = $this->modules[$moduleName];
+
+            if (!isset($this->modules[$moduleName])) {
+                $this->error("Le module {$moduleName} n'existe pas.");
+                continue;
+            }
+
+            if ($this->confirm("Voulez-vous installer le module {$moduleName} ?")) {
+                $this->installModule($moduleName, $moduleComponents, $stack);
             }
         }
 
-        if (empty($modulesToInstall)) {
-            $this->warn('Aucun module sélectionné. Aucun module ne sera installé.');
-            return;
+        if($modules === 'all')
+        {
+            $source = __DIR__ . "/../../../routes/{$stack}/{$moduleName}/web.php}";
+            $destination = base_path("routes/web.php");
+            $this->copyFileIfExists($source, $destination, "Routes du module {$moduleName}");
+        }else{
+            
+            $source = __DIR__ . "/../../../routes/{$stack}/{$moduleName}/{$components['routes']}";
+            $destination = base_path("routes/{$moduleName}");
+            $this->copyFileIfExists($source, $destination, "Routes du module {$moduleName}");
         }
-
-        $this->info('Modules sélectionnés : ' . implode(', ', $modulesToInstall));
-
-        // Publication des ressources pour chaque module sélectionné
-        foreach ($modulesToInstall as $module) {
-            foreach ($availableModules[$module] as $tag) {
-                $this->call('vendor:publish', ['--tag' => $tag]);
-            }
-        }
-
-        $this->info('Installation des modules terminée.');
     }
-} 
+
+    protected function installModule(string $moduleName, array $components, string $stack): void
+    {
+        $this->info("Installation du module {$moduleName}...");
+
+        // Copier les models (commun à toutes les stacks)
+        if (isset($components['models'])) {
+            foreach ($components['models'] as $model) {
+                $source = __DIR__ . "/../../../src/Models/{$moduleName}/{$model}";
+                $destination = app_path("Models/{$moduleName}");
+                $this->copyFileIfExists($source, $destination, "Model {$model}");
+            }
+        }
+
+        // Copier les routes
+        if (isset($components['routes'])) {
+            $source = __DIR__ . "/../../../routes/{$stack}/{$moduleName}/{$components['routes']}";
+            $destination = base_path("routes/{$moduleName}");
+            $this->copyFileIfExists($source, $destination, "Routes du module {$moduleName}");
+        }
+
+        // Copier les migrations
+        if (isset($components['migrations'])) {
+            foreach ($components['migrations'] as $migration) {
+                $source = __DIR__ . "/../../../database/migrations/{$migration}";
+                $destination = database_path("migrations/{$migration}");
+                $this->copyFileIfExists($source, $destination, "Migration {$migration}");
+            }
+        }
+
+        $this->info("Module {$moduleName} installé avec succès.");
+    }
+
+    // Méthodes utilitaires copyFileIfExists et copyDirectoryIfExists comme avant...
+}
