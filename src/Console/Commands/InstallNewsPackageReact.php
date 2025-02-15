@@ -44,14 +44,14 @@ class InstallNewsPackageReact extends Command
             $this->info('Laravel Breeze a été installé avec succès.');
         }
 
-        // Installation des dépendances spécifiques à la stack React
-        $this->installDependencies();
-
         // Installer les modules via la commande dédiée
         $this->info('Installation des modules...');
         $this->call('aristechnews:install:modules', [
             '--stack' => 'react'
         ]);
+
+        // Installation des dépendances spécifiques à la stack React
+        $this->installDependencies();
 
         // Copier les fichiers de base React
         // $this->copyBaseReactFiles();
